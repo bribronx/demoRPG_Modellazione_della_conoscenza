@@ -9,7 +9,7 @@
 <Pane fx:id="mainPane" prefHeight="576.0" prefWidth="768.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.unicam.cs.mpgc.rpg126598.controller.GameController">
    <children>
       <Canvas fx:id="map" height="576.0" width="768.0" />
-      <ImageView fx:id="player" fitHeight="16.0" fitWidth="16.0" focusTraversable="true" layoutX="273.0" layoutY="261.0" pickOnBounds="true" preserveRatio="true">
+      <ImageView fx:id="player" fitHeight="16.0" fitWidth="16.0" focusTraversable="true" layoutX="273.0" layoutY="261.0" onKeyPressed="#update" pickOnBounds="true" preserveRatio="true">
          <image>
             <Image url="@player/00_player.png" />
          </image>
