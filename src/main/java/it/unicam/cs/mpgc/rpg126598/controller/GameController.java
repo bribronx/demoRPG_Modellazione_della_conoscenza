@@ -22,14 +22,14 @@ public class GameController {
     private Canvas map;
 
     private final Player p = new Player();
-    private final PlayerMovementService movementP = new PlayerMovementService(p);
     private PlayerCameraService camera;
+    MapBuilderService mapBuilderService = new MapBuilderService();
+    private final PlayerMovementService movementP = new PlayerMovementService(p, mapBuilderService);
 
     @FXML
     public void initialize() {
-        p.setPlayer(player);
+        p.setImageView(player);
         camera = new PlayerCameraService(p, mainPane, 4);
-        MapBuilderService mapBuilderService = new MapBuilderService();
         mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
     }
 

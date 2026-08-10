@@ -9,13 +9,7 @@ public class Player extends Entity {
 
     public Player() {
         this.setSpeed(4);
+        this.setBoundBox(5, 8, 2, 5);
     }
 
-    public ImageView getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(ImageView player) {
-        this.player = player;
-    }
 }

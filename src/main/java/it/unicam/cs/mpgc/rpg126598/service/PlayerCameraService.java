@@ -22,7 +22,7 @@ public class PlayerCameraService {
     }
 
     public void updateCamera() {
-        ImageView imageP = player.getPlayer();
+        ImageView imageP = player.getImageView();
         double playerX = imageP.getLayoutX() + imageP.getTranslateX() + imageP.getFitWidth() / 2;
         double playerY = imageP.getLayoutY() + imageP.getTranslateY() + imageP.getFitHeight() / 2;
 
