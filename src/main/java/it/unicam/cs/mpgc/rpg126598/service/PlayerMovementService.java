@@ -1,13 +1,10 @@
 package it.unicam.cs.mpgc.rpg126598.service;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
-import javafx.util.Duration;
+
 
 import java.util.Objects;
 
@@ -98,11 +95,9 @@ public class PlayerMovementService {
                                                         "/it/unicam/cs/mpgc/rpg126598/player/05_player.png")))
         };
 
-        private Image[] activeFrames;
-        private int currentFrame = 0;
-        private Timeline walkingTimeline;
         private CollisionService collisionService = new CollisionService();
         private MapBuilderService mapBuilderService;
+        private AnimationService animationService = new AnimationService();
 
         public PlayerMovementService(Player player, MapBuilderService mapBuilderService) {
                 this.player = player;
@@ -115,19 +110,19 @@ public class PlayerMovementService {
                 double deltaY = 0;
                 switch (e.getCode()) {
                         case W:
-                                walkingAnimation(imageP, upFrames);
+                                animationService.walkingAnimation(imageP, upFrames);
                                 deltaY = -player.getSpeed();
                                 break;
                         case S:
-                                walkingAnimation(imageP, downFrames);
+                                animationService.walkingAnimation(imageP, downFrames);
                                 deltaY = player.getSpeed();
                                 break;
                         case A:
-                                walkingAnimation(imageP, leftFrames);
+                                animationService.walkingAnimation(imageP, leftFrames);
                                 deltaX = -player.getSpeed();
                                 break;
                         case D:
-                                walkingAnimation(imageP, rightFrames);
+                                animationService.walkingAnimation(imageP, rightFrames);
                                 deltaX = player.getSpeed();
                                 break;
                 }
@@ -147,25 +142,4 @@ public class PlayerMovementService {
                 }
         }
 
-        public void walkingAnimation(ImageView player, Image[] targetFrames) {
-                if (activeFrames == targetFrames && walkingTimeline != null
-                                && walkingTimeline.getStatus() == Animation.Status.RUNNING) {
-                        return;
-                }
-
-                if (walkingTimeline != null) {
-                        walkingTimeline.stop();
-                }
-
-                activeFrames = targetFrames;
-                currentFrame = 0;
-
-                walkingTimeline = new Timeline(new KeyFrame(Duration.millis(100), e -> {
-                        player.setImage(activeFrames[currentFrame]);
-                        currentFrame = (currentFrame + 1) % activeFrames.length;
-                }));
-
-                walkingTimeline.setCycleCount(Animation.INDEFINITE);
-                walkingTimeline.play();
-        }
 }
