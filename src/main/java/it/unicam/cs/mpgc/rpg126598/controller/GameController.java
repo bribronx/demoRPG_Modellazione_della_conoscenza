@@ -29,8 +29,9 @@ public class GameController {
     @FXML
     public void initialize() {
         p.setImageView(player);
-        camera = new PlayerCameraService(p, mainPane, 4);
         mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
+        camera = new PlayerCameraService(p, mainPane, 4, map.getWidth(), map.getHeight());
+        camera.updateCamera();
     }
 
     @FXML
