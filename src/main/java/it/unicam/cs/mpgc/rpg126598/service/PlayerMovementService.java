@@ -6,102 +6,28 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
 
 
-import java.util.Objects;
 
 public class PlayerMovementService {
 
         private final Player player;
-        Image[] rightFrames = new Image[] {
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/06_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/07_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/08_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/09_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/10_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/11_player.png")))
-        };
+        private final LoadFramesService loadFramesService = new LoadFramesService();
 
-        Image[] leftFrames = new Image[] {
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/left1_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/left2_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/left3_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/left4_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/left5_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/left6_player.png")))
-        };
+        Image[] rightFrames = loadFramesService.loadFrames("player","walk_right", "player_walk_right", 6);
 
-        Image[] upFrames = new Image[] {
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/12_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/13_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/14_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/15_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/16_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/17_player.png")))
-        };
+        Image[] leftFrames = loadFramesService.loadFrames("player","walk_left", "player_walk_left", 6);
 
-        Image[] downFrames = new Image[] {
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/00_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/01_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/02_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/03_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/04_player.png"))),
-                        new Image(Objects.requireNonNull(
-                                        getClass().getResourceAsStream(
-                                                        "/it/unicam/cs/mpgc/rpg126598/player/05_player.png")))
-        };
+        Image[] upFrames =loadFramesService.loadFrames("player","walk_up", "player_walk_up", 6);
+
+        Image[] downFrames = loadFramesService.loadFrames("player","walk_down", "player_walk_down", 6);
 
         private CollisionService collisionService = new CollisionService();
         private MapBuilderService mapBuilderService;
-        private AnimationService animationService = new AnimationService();
+        private AnimationService animationService;
 
         public PlayerMovementService(Player player, MapBuilderService mapBuilderService) {
                 this.player = player;
                 this.mapBuilderService = mapBuilderService;
+                this.animationService = new AnimationService();
         }
 
         public void makeMove(KeyEvent e) {
@@ -124,6 +50,9 @@ public class PlayerMovementService {
                         case D:
                                 animationService.walkingAnimation(imageP, rightFrames);
                                 deltaX = player.getSpeed();
+                                break;
+                        default:
+                                animationService.walkingAnimation(imageP, downFrames);
                                 break;
                 }
                 if (deltaX != 0 || deltaY != 0) {
