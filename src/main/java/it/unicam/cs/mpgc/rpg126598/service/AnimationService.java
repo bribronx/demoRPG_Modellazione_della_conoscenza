@@ -13,7 +13,7 @@ public class AnimationService {
     private int currentFrame = 0;
     private Timeline walkingTimeline;
 
-    public void walkingAnimation(ImageView entity, Image[] targetFrames) {
+    public void walkingAnimation(ImageView entity, Image[] targetFrames, double frameDuration) {
         if (activeFrames == targetFrames && walkingTimeline != null
                 && walkingTimeline.getStatus() == Animation.Status.RUNNING) {
             return;
@@ -26,7 +26,7 @@ public class AnimationService {
         activeFrames = targetFrames;
         currentFrame = 0;
 
-        walkingTimeline = new Timeline(new KeyFrame(Duration.millis(100), e -> {
+        walkingTimeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> {
             entity.setImage(activeFrames[currentFrame]);
             currentFrame = (currentFrame + 1) % activeFrames.length;
         }));
@@ -34,5 +34,4 @@ public class AnimationService {
         walkingTimeline.setCycleCount(Animation.INDEFINITE);
         walkingTimeline.play();
     }
-    
 }

@@ -36,23 +36,23 @@ public class PlayerMovementService {
                 double deltaY = 0;
                 switch (e.getCode()) {
                         case W:
-                                animationService.walkingAnimation(imageP, upFrames);
+                                animationService.walkingAnimation(imageP, upFrames, 100);
                                 deltaY = -player.getSpeed();
                                 break;
                         case S:
-                                animationService.walkingAnimation(imageP, downFrames);
+                                animationService.walkingAnimation(imageP, downFrames, 100);
                                 deltaY = player.getSpeed();
                                 break;
                         case A:
-                                animationService.walkingAnimation(imageP, leftFrames);
+                                animationService.walkingAnimation(imageP, leftFrames, 100);
                                 deltaX = -player.getSpeed();
                                 break;
                         case D:
-                                animationService.walkingAnimation(imageP, rightFrames);
+                                animationService.walkingAnimation(imageP, rightFrames, 100);
                                 deltaX = player.getSpeed();
                                 break;
                         default:
-                                animationService.walkingAnimation(imageP, downFrames);
+                                animationService.walkingAnimation(imageP, downFrames, 100);
                                 break;
                 }
                 if (deltaX != 0 || deltaY != 0) {
@@ -63,10 +63,10 @@ public class PlayerMovementService {
         private void tryMovePlayer(double deltaX, double deltaY) {
                 int[][] collisionMap = mapBuilderService.getCollisionMap();
 
-                if (deltaX != 0 && !collisionService.checkCollision(player, deltaX, 0, collisionMap, null)) {
+                if (deltaX != 0 && !collisionService.checkCollision(player, deltaX, 0, collisionMap)) {
                         player.moveX(deltaX);
                 }
-                if (deltaY != 0 && !collisionService.checkCollision(player, 0, deltaY, collisionMap, null)) {
+                if (deltaY != 0 && !collisionService.checkCollision(player, 0, deltaY, collisionMap)) {
                         player.moveY(deltaY);
                 }
         }

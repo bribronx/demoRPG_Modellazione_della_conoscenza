@@ -48,6 +48,21 @@ public class CollisionService {
     }
 
     public boolean checkEntityCollision(Entity entity, double deltaX, double deltaY,
+            Entity otherEntity) {
+        if (entity == null || otherEntity == null)
+            return false;
+
+        Bounds futureHitbox = entity.getHitboxAt(deltaX, deltaY);
+
+        if (otherEntity != entity) {
+            if (futureHitbox.intersects(otherEntity.getHitbox())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean checkEntityCollision(Entity entity, double deltaX, double deltaY,
             List<? extends Entity> otherEntities) {
         if (entity == null || otherEntities == null)
             return false;
@@ -65,9 +80,20 @@ public class CollisionService {
     }
 
     public boolean checkCollision(Entity entity, double deltaX, double deltaY, int[][] collisionMap,
+            Entity otherEntity) {
+        boolean tileCol = checkTileCollision(entity, deltaX, deltaY, collisionMap);
+        boolean entityCol = checkEntityCollision(entity, deltaX, deltaY, otherEntity);
+        return tileCol || entityCol;
+    }
+
+    public boolean checkCollision(Entity entity, double deltaX, double deltaY, int[][] collisionMap,
             List<? extends Entity> otherEntities) {
         boolean tileCol = checkTileCollision(entity, deltaX, deltaY, collisionMap);
         boolean entityCol = checkEntityCollision(entity, deltaX, deltaY, otherEntities);
         return tileCol || entityCol;
+    }
+
+    public boolean checkCollision(Entity entity, double deltaX, double deltaY, int[][] collisionMap) {
+        return checkTileCollision(entity, deltaX, deltaY, collisionMap);
     }
 }

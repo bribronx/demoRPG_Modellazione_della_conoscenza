@@ -6,7 +6,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
 
 public abstract class Entity {
-    private int speed;
+    private double speed;
     private int health;
     private int maxHealth;
     private int defense;
@@ -89,11 +89,11 @@ public abstract class Entity {
         this.health = health;
     }
 
-    public int getSpeed() {
+    public double getSpeed() {
         return speed;
     }
 
-    public void setSpeed(int speed) {
+    public void setSpeed(double speed) {
         this.speed = speed;
     }
 
