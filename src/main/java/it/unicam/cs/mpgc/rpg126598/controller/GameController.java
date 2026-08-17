@@ -1,7 +1,9 @@
 package it.unicam.cs.mpgc.rpg126598.controller;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
+import it.unicam.cs.mpgc.rpg126598.model.Skeleton;
 import it.unicam.cs.mpgc.rpg126598.model.Slime;
+import it.unicam.cs.mpgc.rpg126598.model.Zombie;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerCameraService;
@@ -35,6 +37,7 @@ public class GameController {
     @FXML
     public void initialize() {
         p.setImageView(player);
+        //mainPane.getChildren().add(1, p.getShadow());
         mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
         camera = new PlayerCameraService(p, mainPane, 4, map.getWidth(), map.getHeight());
         camera.updateCamera();
@@ -49,18 +52,31 @@ public class GameController {
 
         Slime slime1 = new Slime();
         Slime slime2 = new Slime();
+        Zombie zombie1 = new Zombie();
+        Skeleton skeleton1 = new Skeleton();
+        skeleton1.getImageView().setLayoutX(100);
+        skeleton1.getImageView().setLayoutY(150);
         slime1.getImageView().setLayoutX(100);
         slime1.getImageView().setLayoutY(100);
         slime2.getImageView().setLayoutX(120);
         slime2.getImageView().setLayoutY(100);
-        mainPane.getChildren().addAll(slime1.getImageView(), slime2.getImageView());
+        zombie1.getImageView().setLayoutX(120);
+        zombie1.getImageView().setLayoutY(50);
+        mainPane.getChildren().addAll(
+            slime1.getShadow(), slime1.getImageView(),
+            slime2.getShadow(), slime2.getImageView(),
+            zombie1.getShadow(), zombie1.getImageView(),
+            skeleton1.getShadow(), skeleton1.getImageView()
+        );
         enemyMovementService.addEnemy(slime1);
         enemyMovementService.addEnemy(slime2);
+        enemyMovementService.addEnemy(zombie1);
+        enemyMovementService.addEnemy(skeleton1);
     }
 
     @FXML
     public void update(KeyEvent event) {
-        movementP.makeMove(event);
+        movementP.makeMove(event, enemyMovementService.getEnemies());
         camera.updateCamera();
     }
 }

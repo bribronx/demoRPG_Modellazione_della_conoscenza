@@ -4,6 +4,8 @@ import javafx.geometry.Bounds;
 import javafx.geometry.BoundingBox;
 import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Ellipse;
+import javafx.scene.paint.Color;
 
 public abstract class Entity {
     private double speed;
@@ -16,6 +18,7 @@ public abstract class Entity {
     private int xp;
     private ImageView imageView;
     private Rectangle boundBox;
+    private Ellipse shadow;
 
     public Rectangle getBoundBox() {
         return boundBox;
@@ -31,6 +34,22 @@ public abstract class Entity {
 
     public void setImageView(ImageView imageView) {
         this.imageView = imageView;
+    }
+
+    public Ellipse getShadow() {
+        if (shadow == null && imageView != null) {
+            shadow = new Ellipse();
+            shadow.radiusXProperty().bind(imageView.fitWidthProperty().divide(2.5));
+            shadow.radiusYProperty().bind(imageView.fitWidthProperty().divide(6.0));
+            shadow.setFill(Color.color(0, 0, 0, 0.1));
+
+            shadow.layoutXProperty().bind(imageView.layoutXProperty().add(imageView.fitWidthProperty().divide(2)));
+            shadow.layoutYProperty().bind(imageView.layoutYProperty().add(imageView.fitHeightProperty().subtract(1)));
+
+            shadow.translateXProperty().bind(imageView.translateXProperty());
+            shadow.translateYProperty().bind(imageView.translateYProperty());
+        }
+        return shadow;
     }
 
     public int getXp() {

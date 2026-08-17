@@ -93,7 +93,4 @@ public class CollisionService {
         return tileCol || entityCol;
     }
 
-    public boolean checkCollision(Entity entity, double deltaX, double deltaY, int[][] collisionMap) {
-        return checkTileCollision(entity, deltaX, deltaY, collisionMap);
-    }
 }

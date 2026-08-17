@@ -1,9 +1,11 @@
 package it.unicam.cs.mpgc.rpg126598.service;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
+import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyEvent;
+import java.util.List;
 
 
 
@@ -30,7 +32,7 @@ public class PlayerMovementService {
                 this.animationService = new AnimationService();
         }
 
-        public void makeMove(KeyEvent e) {
+        public void makeMove(KeyEvent e, List<Enemy> enemies) {
                 ImageView imageP = player.getImageView();
                 double deltaX = 0;
                 double deltaY = 0;
@@ -56,17 +58,17 @@ public class PlayerMovementService {
                                 break;
                 }
                 if (deltaX != 0 || deltaY != 0) {
-                        tryMovePlayer(deltaX, deltaY);
+                        tryMovePlayer(deltaX, deltaY, enemies);
                 }
         }
 
-        private void tryMovePlayer(double deltaX, double deltaY) {
+        private void tryMovePlayer(double deltaX, double deltaY, List<Enemy> enemies) {
                 int[][] collisionMap = mapBuilderService.getCollisionMap();
 
-                if (deltaX != 0 && !collisionService.checkCollision(player, deltaX, 0, collisionMap)) {
+                if (deltaX != 0 && !collisionService.checkCollision(player, deltaX, 0, collisionMap, enemies)) {
                         player.moveX(deltaX);
                 }
-                if (deltaY != 0 && !collisionService.checkCollision(player, 0, deltaY, collisionMap)) {
+                if (deltaY != 0 && !collisionService.checkCollision(player, 0, deltaY, collisionMap, enemies)) {
                         player.moveY(deltaY);
                 }
         }
