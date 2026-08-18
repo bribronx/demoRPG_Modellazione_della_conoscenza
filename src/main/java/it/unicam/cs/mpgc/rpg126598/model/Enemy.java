@@ -3,20 +3,28 @@ package it.unicam.cs.mpgc.rpg126598.model;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.strategy.EnemyMovementStrategy;
+import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import java.util.List;
 
 public abstract class Enemy extends Entity {
 
     private EnemyMovementStrategy movementStrategy;
+    private AttackStrategy attackStrategy;
+    private long lastAttackTime = 0;
     private double aggroRange = 120.0;
     private double attackRange = 20.0;
-    private EntityState state = EntityState.IDLE;
+
 
     public Enemy() {
     }
 
     public Enemy(EnemyMovementStrategy movementStrategy) {
         this.movementStrategy = movementStrategy;
+    }
+
+    public Enemy(EnemyMovementStrategy movementStrategy, AttackStrategy attackStrategy) {
+        this.movementStrategy = movementStrategy;
+        this.attackStrategy = attackStrategy;
     }
 
     public EnemyMovementStrategy getMovementStrategy() {
@@ -43,12 +51,22 @@ public abstract class Enemy extends Entity {
         this.attackRange = attackRange;
     }
 
-    public EntityState getState() {
-        return state;
+   
+
+    public AttackStrategy getAttackStrategy() {
+        return attackStrategy;
     }
 
-    public void setState(EntityState state) {
-        this.state = state;
+    public void setAttackStrategy(AttackStrategy attackStrategy) {
+        this.attackStrategy = attackStrategy;
+    }
+
+    public long getLastAttackTime() {
+        return lastAttackTime;
+    }
+
+    public void setLastAttackTime(long lastAttackTime) {
+        this.lastAttackTime = lastAttackTime;
     }
 
     public void update(Player target, List<Enemy> enemies, MapBuilderService mapBuilderService, CollisionService collisionService, double deltaTime) {

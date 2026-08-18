@@ -34,4 +34,32 @@ public class AnimationService {
         walkingTimeline.setCycleCount(Animation.INDEFINITE);
         walkingTimeline.play();
     }
+
+    public void attackAnimation(ImageView entity, Image[] targetFrames, double frameDuration) {
+        if (targetFrames == null || targetFrames.length == 0) {
+            return;
+        }
+
+        if (walkingTimeline != null) {
+            walkingTimeline.stop();
+        }
+
+        activeFrames = targetFrames;
+        currentFrame = 0;
+
+        Image previousImage = entity.getImage();
+
+        walkingTimeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> {
+            if (currentFrame < activeFrames.length) {
+                entity.setImage(activeFrames[currentFrame]);
+                currentFrame++;
+            }
+        }));
+
+        walkingTimeline.setCycleCount(targetFrames.length);
+        walkingTimeline.setOnFinished(e -> {
+            entity.setImage(previousImage);
+        });
+        walkingTimeline.play();
+    }
 }

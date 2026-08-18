@@ -1,17 +1,24 @@
 package it.unicam.cs.mpgc.rpg126598.controller;
 
+import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
 import it.unicam.cs.mpgc.rpg126598.model.Skeleton;
 import it.unicam.cs.mpgc.rpg126598.model.Slime;
 import it.unicam.cs.mpgc.rpg126598.model.Zombie;
+import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
+import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerCameraService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerMovementService;
+import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
+import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 
@@ -31,13 +38,43 @@ public class GameController {
     MapBuilderService mapBuilderService = new MapBuilderService();
     private final PlayerMovementService movementP = new PlayerMovementService(p, mapBuilderService);
     private final EnemyMovementService enemyMovementService = new EnemyMovementService(mapBuilderService);
+    private final CombatService combatService = new CombatService(new CollisionService());
+    private final AttackStrategy playerMeleeAttack = new MeleeAttackStrategy();
 
     private AnimationTimer gameLoop;
 
     @FXML
     public void initialize() {
         p.setImageView(player);
-        //mainPane.getChildren().add(1, p.getShadow());
+        enemyMovementService.setCombatService(combatService);
+        combatService.setParentPane(mainPane);
+
+        combatService.setCombatListener(new CombatService.CombatListener() {
+            @Override
+            public void onDamageDealt(Entity attacker, Entity target, int damage) {
+                String attackerName = attacker != null ? attacker.getClass().getSimpleName() : "Osso";
+                System.out.println(attackerName + " infligge " + damage +
+                        " danni a " + target.getClass().getSimpleName() +
+                        " (HP rimanenti: " + target.getHealth() + ")");
+            }
+
+            @Override
+            public void onEntityDeath(Entity deadEntity, Entity killer) {
+                System.out.println(deadEntity.getClass().getSimpleName() + " è morto!");
+                if (deadEntity instanceof Enemy enemy) {
+                    enemyMovementService.removeEnemy(enemy);
+                    mainPane.getChildren().remove(enemy.getImageView());
+                    mainPane.getChildren().remove(enemy.getShadow());
+                } else if (deadEntity instanceof Player) {
+                    System.out.println("GAME OVER!");
+                    gameLoop.stop();
+                    mainPane.getChildren().remove(p.getImageView());
+                    mainPane.getChildren().remove(p.getShadow());
+                }
+            }
+        });
+
+        // mainPane.getChildren().add(1, p.getShadow());
         mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
         camera = new PlayerCameraService(p, mainPane, 4, map.getWidth(), map.getHeight());
         camera.updateCamera();
@@ -45,7 +82,10 @@ public class GameController {
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                enemyMovementService.updateEnemies(p, now);
+                if (!p.isDead()) {
+                    enemyMovementService.updateEnemies(p, now);
+                    combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
+                }
             }
         };
         gameLoop.start();
@@ -54,6 +94,9 @@ public class GameController {
         Slime slime2 = new Slime();
         Zombie zombie1 = new Zombie();
         Skeleton skeleton1 = new Skeleton();
+        Skeleton skeleton2 = new Skeleton();
+        skeleton2.getImageView().setLayoutX(300);
+        skeleton2.getImageView().setLayoutY(150);
         skeleton1.getImageView().setLayoutX(100);
         skeleton1.getImageView().setLayoutY(150);
         slime1.getImageView().setLayoutX(100);
@@ -63,20 +106,29 @@ public class GameController {
         zombie1.getImageView().setLayoutX(120);
         zombie1.getImageView().setLayoutY(50);
         mainPane.getChildren().addAll(
-            slime1.getShadow(), slime1.getImageView(),
-            slime2.getShadow(), slime2.getImageView(),
-            zombie1.getShadow(), zombie1.getImageView(),
-            skeleton1.getShadow(), skeleton1.getImageView()
-        );
+                slime1.getShadow(), slime1.getImageView(),
+                slime2.getShadow(), slime2.getImageView(),
+                zombie1.getShadow(), zombie1.getImageView(),
+                skeleton1.getShadow(), skeleton1.getImageView(),
+                skeleton2.getShadow(), skeleton2.getImageView());
         enemyMovementService.addEnemy(slime1);
         enemyMovementService.addEnemy(slime2);
         enemyMovementService.addEnemy(zombie1);
         enemyMovementService.addEnemy(skeleton1);
+        enemyMovementService.addEnemy(skeleton2);
     }
 
     @FXML
     public void update(KeyEvent event) {
+        if (p.isDead())
+            return;
+
         movementP.makeMove(event, enemyMovementService.getEnemies());
         camera.updateCamera();
+
+        if (event.getCode() == KeyCode.SPACE) {
+            combatService.executeAttack(p, enemyMovementService.getEnemies(), playerMeleeAttack);
+            combatService.attackAnimation(p);
+        }
     }
 }

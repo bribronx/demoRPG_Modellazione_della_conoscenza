@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg126598.model;
 
 import it.unicam.cs.mpgc.rpg126598.strategy.SlimeMovementStrategy;
+import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 
@@ -8,6 +9,7 @@ public class Slime extends Enemy {
 
     public Slime() {
         super(new SlimeMovementStrategy());
+        this.setAttackStrategy(new MeleeAttackStrategy());
         this.setSpeed(0.8);
         this.setBoundBox(4, 4, 12, 12);
         this.setHealth(10);

@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg126598.model;
 
 import it.unicam.cs.mpgc.rpg126598.strategy.ZombieMovementStrategy;
+import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -8,6 +9,7 @@ import javafx.scene.image.ImageView;
 public class Zombie extends Enemy {
     public Zombie() {
         super(new ZombieMovementStrategy());
+        this.setAttackStrategy(new MeleeAttackStrategy());
         this.setSpeed(0.2);
         this.setMaxHealth(100);
         this.setBoundBox(4, 4, 12, 12);

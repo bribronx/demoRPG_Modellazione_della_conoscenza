@@ -15,6 +15,7 @@ public class EnemyMovementService {
     private final List<Enemy> enemies = new ArrayList<>();
     private final CollisionService collisionService;
     private MapBuilderService mapBuilderService;
+    private CombatService combatService;
 
     public EnemyMovementService(MapBuilderService mapBuilderService) {
         this.mapBuilderService = mapBuilderService;
@@ -24,6 +25,10 @@ public class EnemyMovementService {
     public EnemyMovementService(MapBuilderService mapBuilderService, CollisionService collisionService) {
         this.mapBuilderService = mapBuilderService;
         this.collisionService = collisionService != null ? collisionService : new CollisionService();
+    }
+
+    public void setCombatService(CombatService combatService) {
+        this.combatService = combatService;
     }
 
     public void addEnemy(Enemy enemy) {
@@ -54,6 +59,20 @@ public class EnemyMovementService {
         for (Enemy enemy : enemies) {
             if (enemy != null) {
                 enemy.update(targetPlayer, enemies, mapBuilderService, collisionService, deltaTime);
+
+                // Esegui attacco del nemico se è a portata del player e se il cooldown è scaduto
+                if (enemy.getAttackStrategy() != null && combatService != null && !targetPlayer.isDead()) {
+                    double dist = Math.hypot(targetPlayer.getGlobalX() - enemy.getGlobalX(),
+                                             targetPlayer.getGlobalY() - enemy.getGlobalY());
+                    if (dist <= enemy.getAttackRange()) {
+                        long cooldownMillis = (long) (enemy.getAttackStrategy().getCooldown() * 1000.0);
+                        long currentTime = System.currentTimeMillis();
+                        if (currentTime - enemy.getLastAttackTime() >= cooldownMillis) {
+                            combatService.executeAttack(enemy, List.of(targetPlayer), enemy.getAttackStrategy());
+                            enemy.setLastAttackTime(currentTime);
+                        }
+                    }
+                }
             }
         }
     }

@@ -7,7 +7,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.paint.Color;
 
-public abstract class Entity {
+public abstract class Entity implements Targetable{
     private double speed;
     private int health;
     private int maxHealth;
@@ -19,6 +19,16 @@ public abstract class Entity {
     private ImageView imageView;
     private Rectangle boundBox;
     private Ellipse shadow;
+    private EntityState state = EntityState.IDLE;
+    private Direction direction = Direction.DOWN;
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public void setDirection(Direction direction) {
+        this.direction = direction;
+    }
 
     public Rectangle getBoundBox() {
         return boundBox;
@@ -157,4 +167,25 @@ public abstract class Entity {
         moveX(deltaX);
         moveY(deltaY);
     }
+
+     public EntityState getState() {
+        return state;
+    }
+
+    public void setState(EntityState state) {
+        this.state = state;
+    }
+
+    @Override
+    public void takeDamage(int amount){
+        this.setHealth(this.getHealth() - amount);
+    }
+
+    @Override
+    public boolean isDead(){
+        return this.getHealth() <= 0;
+    }
+
+
+    
 }

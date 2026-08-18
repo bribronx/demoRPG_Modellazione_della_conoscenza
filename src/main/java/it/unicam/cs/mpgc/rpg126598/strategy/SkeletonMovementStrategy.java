@@ -4,6 +4,7 @@ import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
 import it.unicam.cs.mpgc.rpg126598.model.EntityState;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
+import it.unicam.cs.mpgc.rpg126598.model.Direction;
 import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import it.unicam.cs.mpgc.rpg126598.service.LoadFramesService;
@@ -34,6 +35,13 @@ public class SkeletonMovementStrategy implements EnemyMovementStrategy {
     @Override
     public void move(Enemy enemy, Player target, List<Enemy> enemies, MapBuilderService mapBuilderService, CollisionService collisionService, double deltaTime) {
         if (target == null || target.getImageView() == null) return;
+
+        // Blocca il movimento e l'aggiornamento dell'animazione di movimento se lo scheletro sta attaccando
+        long timeSinceLastAttack = System.currentTimeMillis() - enemy.getLastAttackTime();
+        long attackDurationMillis = 1000L;
+        if (timeSinceLastAttack < attackDurationMillis) {
+            return;
+        }
 
         double enemyX = enemy.getGlobalX();
         double enemyY = enemy.getGlobalY();
@@ -76,14 +84,18 @@ public class SkeletonMovementStrategy implements EnemyMovementStrategy {
                 if (Math.abs(dirX) > Math.abs(dirY)) {
                     if (dirX > 0) {
                         animationService.walkingAnimation(imageView, walkRightFrames, 150);
+                        enemy.setDirection(Direction.RIGHT);
                     } else {
                         animationService.walkingAnimation(imageView, walkLeftFrames, 150);
+                        enemy.setDirection(Direction.LEFT);
                     }
                 } else {
                     if (dirY > 0) {
                         animationService.walkingAnimation(imageView, walkDownFrames, 150);
+                        enemy.setDirection(Direction.DOWN);
                     } else {
                         animationService.walkingAnimation(imageView, walkUpFrames, 150);
+                        enemy.setDirection(Direction.UP);
                     }
                 }
             } else {

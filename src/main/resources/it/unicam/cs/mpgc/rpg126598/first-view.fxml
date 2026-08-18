@@ -11,7 +11,7 @@
       <Canvas fx:id="map" height="576.0" width="768.0" />
       <ImageView fx:id="player" fitHeight="16.0" fitWidth="16.0" focusTraversable="true" layoutX="273.0" layoutY="261.0" onKeyPressed="#update" pickOnBounds="true" preserveRatio="true">
          <image>
-            <Image url="@player/00_player.png" />
+            <Image url="@player/walk_down/player_walk_down_01.png" />
          </image>
          <viewport>
             <Rectangle2D height="40.0" minX="10.0" minY="10.0" width="30.0" />

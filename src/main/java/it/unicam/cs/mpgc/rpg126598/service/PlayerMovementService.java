@@ -1,6 +1,7 @@
 package it.unicam.cs.mpgc.rpg126598.service;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
+import it.unicam.cs.mpgc.rpg126598.model.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -40,21 +41,22 @@ public class PlayerMovementService {
                         case W:
                                 animationService.walkingAnimation(imageP, upFrames, 100);
                                 deltaY = -player.getSpeed();
+                                player.setDirection(Direction.UP);
                                 break;
                         case S:
                                 animationService.walkingAnimation(imageP, downFrames, 100);
                                 deltaY = player.getSpeed();
+                                player.setDirection(Direction.DOWN);
                                 break;
                         case A:
                                 animationService.walkingAnimation(imageP, leftFrames, 100);
                                 deltaX = -player.getSpeed();
+                                player.setDirection(Direction.LEFT);
                                 break;
                         case D:
                                 animationService.walkingAnimation(imageP, rightFrames, 100);
                                 deltaX = player.getSpeed();
-                                break;
-                        default:
-                                animationService.walkingAnimation(imageP, downFrames, 100);
+                                player.setDirection(Direction.RIGHT);
                                 break;
                 }
                 if (deltaX != 0 || deltaY != 0) {

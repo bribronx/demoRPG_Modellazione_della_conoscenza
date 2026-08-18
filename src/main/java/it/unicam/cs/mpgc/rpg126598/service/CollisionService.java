@@ -19,10 +19,17 @@ public class CollisionService {
             return false;
 
         Bounds futureHitbox = entity.getHitboxAt(deltaX, deltaY);
-        double hitboxX = futureHitbox.getMinX();
-        double hitboxY = futureHitbox.getMinY();
-        double hitboxW = futureHitbox.getWidth();
-        double hitboxH = futureHitbox.getHeight();
+        return checkTileCollision(futureHitbox, collisionMap);
+    }
+
+    public boolean checkTileCollision(Bounds hitbox, int[][] collisionMap) {
+        if (hitbox == null || collisionMap == null)
+            return false;
+
+        double hitboxX = hitbox.getMinX();
+        double hitboxY = hitbox.getMinY();
+        double hitboxW = hitbox.getWidth();
+        double hitboxH = hitbox.getHeight();
 
         int minCol = (int) (hitboxX / TILE_SIZE);
         int maxCol = (int) ((hitboxX + hitboxW) / TILE_SIZE);
@@ -38,7 +45,7 @@ public class CollisionService {
             for (int col = minCol; col <= maxCol; col++) {
                 if (collisionMap[row][col] >= 3) {
                     Bounds tileBounds = new BoundingBox(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
-                    if (futureHitbox.intersects(tileBounds)) {
+                    if (hitbox.intersects(tileBounds)) {
                         return true;
                     }
                 }
