@@ -24,8 +24,6 @@ public class ZombieMovementStrategy implements EnemyMovementStrategy {
     private final Image[] walkRightFrames = loadFramesService.loadFrames("zombie", "walk_right", "zombie_walk_right", 8);
     private final Image[] walkUpFrames = loadFramesService.loadFrames("zombie", "walk_up", "zombie_walk_up", 8);
 
-    private final AnimationService animationService = new AnimationService();
-
     double dirX=0;
     double dirY=0;
 
@@ -78,6 +76,7 @@ public class ZombieMovementStrategy implements EnemyMovementStrategy {
 
         ImageView imageView = enemy.getImageView();
         if (imageView != null) {
+            AnimationService animationService = enemy.getAnimationService();
             if (enemy.getState() == EntityState.CHASING) {
                 if (Math.abs(dirX) > Math.abs(dirY)) {
                     if (dirX > 0) {

@@ -6,6 +6,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.paint.Color;
+import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 
 public abstract class Entity implements Targetable{
     private double speed;
@@ -21,6 +22,14 @@ public abstract class Entity implements Targetable{
     private Ellipse shadow;
     private EntityState state = EntityState.IDLE;
     private Direction direction = Direction.DOWN;
+    private AnimationService animationService;
+
+    public AnimationService getAnimationService() {
+        if (animationService == null) {
+            animationService = new AnimationService();
+        }
+        return animationService;
+    }
 
     public Direction getDirection() {
         return direction;

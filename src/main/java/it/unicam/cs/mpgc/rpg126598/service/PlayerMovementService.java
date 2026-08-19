@@ -25,18 +25,17 @@ public class PlayerMovementService {
 
         private CollisionService collisionService = new CollisionService();
         private MapBuilderService mapBuilderService;
-        private AnimationService animationService;
 
         public PlayerMovementService(Player player, MapBuilderService mapBuilderService) {
                 this.player = player;
                 this.mapBuilderService = mapBuilderService;
-                this.animationService = new AnimationService();
         }
 
         public void makeMove(KeyEvent e, List<Enemy> enemies) {
                 ImageView imageP = player.getImageView();
                 double deltaX = 0;
                 double deltaY = 0;
+                AnimationService animationService = player.getAnimationService();
                 switch (e.getCode()) {
                         case W:
                                 animationService.walkingAnimation(imageP, upFrames, 100);
@@ -57,6 +56,9 @@ public class PlayerMovementService {
                                 animationService.walkingAnimation(imageP, rightFrames, 100);
                                 deltaX = player.getSpeed();
                                 player.setDirection(Direction.RIGHT);
+                                break;
+                        default:
+                                animationService.walkingAnimation(imageP, downFrames, 100);
                                 break;
                 }
                 if (deltaX != 0 || deltaY != 0) {

@@ -12,7 +12,6 @@ public class Player extends Entity {
         this.setBoundBox(5, 8, 2, 5);
         this.setHealth(100);
         this.setMaxHealth(100);
-        this.setHealth(100);
         this.setDefense(10);
         this.setDamage(20);
     }

@@ -29,7 +29,6 @@ public class CombatService {
 
     private final CollisionService collisionService;
     private final LoadFramesService loadFramesService = new LoadFramesService();
-    private final AnimationService animationService = new AnimationService();
     private CombatListener listener;
     
     private Pane parentPane;
@@ -173,7 +172,38 @@ public class CombatService {
         }
 
         Image[] frames = loadFramesService.loadFrames(entityName, folder2, prefix, frameCount);
-        animationService.attackAnimation(attacker.getImageView(), frames, frameDuration);
+        attacker.getAnimationService().attackAnimation(attacker.getImageView(), frames, frameDuration);
+    }
+
+    public void deathAnimation(Entity entity) {
+        deathAnimation(entity, null);
+    }
+
+    public void deathAnimation(Entity entity, Runnable onFinished) {
+        String entityName = entity.getClass().getSimpleName().toLowerCase();
+        String folder2 = "death";
+        String prefix = entityName + "_death";
+
+        int frameCount = 0;
+        double frameDuration = 150;
+
+        if (entity instanceof Player) {
+            frameCount = 2;
+            frameDuration = 300;
+        } else if (entity instanceof Skeleton) {
+            frameCount = 4;
+            frameDuration = 150;
+        }
+
+        if (frameCount == 0) {
+            if (onFinished != null) {
+                onFinished.run();
+            }
+            return;
+        }
+
+        Image[] frames = loadFramesService.loadFrames(entityName, folder2, prefix, frameCount);
+        entity.getAnimationService().deathAnimation(entity.getImageView(), frames, frameDuration, onFinished);
     }
 
 }

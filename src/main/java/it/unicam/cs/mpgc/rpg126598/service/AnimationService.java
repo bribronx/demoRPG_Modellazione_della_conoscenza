@@ -12,6 +12,8 @@ public class AnimationService {
     private Image[] activeFrames;
     private int currentFrame = 0;
     private Timeline walkingTimeline;
+    private Timeline attackTimeline;
+    private Timeline deathTimeline;
 
     public void walkingAnimation(ImageView entity, Image[] targetFrames, double frameDuration) {
         if (activeFrames == targetFrames && walkingTimeline != null
@@ -21,6 +23,12 @@ public class AnimationService {
 
         if (walkingTimeline != null) {
             walkingTimeline.stop();
+        }
+        if (attackTimeline != null) {
+            attackTimeline.stop();
+        }
+        if (deathTimeline != null) {
+            deathTimeline.stop();
         }
 
         activeFrames = targetFrames;
@@ -43,23 +51,82 @@ public class AnimationService {
         if (walkingTimeline != null) {
             walkingTimeline.stop();
         }
+        if (attackTimeline != null) {
+            attackTimeline.stop();
+        }
+        if (deathTimeline != null) {
+            deathTimeline.stop();
+        }
 
         activeFrames = targetFrames;
         currentFrame = 0;
 
         Image previousImage = entity.getImage();
 
-        walkingTimeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> {
+        attackTimeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> {
             if (currentFrame < activeFrames.length) {
                 entity.setImage(activeFrames[currentFrame]);
                 currentFrame++;
             }
         }));
 
-        walkingTimeline.setCycleCount(targetFrames.length);
-        walkingTimeline.setOnFinished(e -> {
+        attackTimeline.setCycleCount(targetFrames.length);
+        attackTimeline.setOnFinished(e -> {
             entity.setImage(previousImage);
         });
-        walkingTimeline.play();
+        attackTimeline.play();
+    }
+
+    public void deathAnimation(ImageView entity, Image[] targetFrames, double frameDuration) {
+        deathAnimation(entity, targetFrames, frameDuration, null);
+    }
+
+    public void deathAnimation(ImageView entity, Image[] targetFrames, double frameDuration, Runnable onFinished) {
+        if (targetFrames == null || targetFrames.length == 0) {
+            if (onFinished != null) {
+                onFinished.run();
+            }
+            return;
+        }
+
+        if (walkingTimeline != null) {
+            walkingTimeline.stop();
+        }
+        if (attackTimeline != null) {
+            attackTimeline.stop();
+        }
+        if (deathTimeline != null) {
+            deathTimeline.stop();
+        }
+
+        activeFrames = targetFrames;
+        currentFrame = 0;
+
+        deathTimeline = new Timeline(new KeyFrame(Duration.millis(frameDuration), e -> {
+            if (currentFrame < activeFrames.length) {
+                entity.setImage(activeFrames[currentFrame]);
+                currentFrame++;
+            }
+        }));
+
+        deathTimeline.setCycleCount(targetFrames.length);
+        deathTimeline.setOnFinished(e -> {
+            if (onFinished != null) {
+                onFinished.run();
+            }
+        });
+        deathTimeline.play();
+    }
+
+    public void stopAll() {
+        if (walkingTimeline != null) {
+            walkingTimeline.stop();
+        }
+        if (attackTimeline != null) {
+            attackTimeline.stop();
+        }
+        if (deathTimeline != null) {
+            deathTimeline.stop();
+        }
     }
 }

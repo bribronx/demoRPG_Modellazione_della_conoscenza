@@ -29,7 +29,6 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
     private double dirX = 0;
     private double dirY = 0;
 
-    private final AnimationService animationService = new AnimationService();
     private final LoadFramesService loadFramesService = new LoadFramesService();
 
     private final Image[] idleFrames = loadFramesService.loadFrames("slime", "idle", "slime_idle", 4);
@@ -122,6 +121,7 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
         }
         ImageView imageView = enemy.getImageView();
         if (imageView != null) {
+            AnimationService animationService = enemy.getAnimationService();
             if (isHopping) {
                 if (Math.abs(dirX) > Math.abs(dirY)) {
                     if (dirX > 0) {

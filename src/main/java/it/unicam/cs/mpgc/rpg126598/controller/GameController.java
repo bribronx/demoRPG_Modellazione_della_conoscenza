@@ -60,16 +60,20 @@ public class GameController {
 
             @Override
             public void onEntityDeath(Entity deadEntity, Entity killer) {
-                System.out.println(deadEntity.getClass().getSimpleName() + " è morto!");
+                System.out.println(deadEntity.getClass().getSimpleName() + " e' morto!");
                 if (deadEntity instanceof Enemy enemy) {
                     enemyMovementService.removeEnemy(enemy);
-                    mainPane.getChildren().remove(enemy.getImageView());
-                    mainPane.getChildren().remove(enemy.getShadow());
+                    combatService.deathAnimation(enemy, () -> {
+                        mainPane.getChildren().remove(enemy.getImageView());
+                        mainPane.getChildren().remove(enemy.getShadow());
+                    });
                 } else if (deadEntity instanceof Player) {
                     System.out.println("GAME OVER!");
                     gameLoop.stop();
-                    mainPane.getChildren().remove(p.getImageView());
-                    mainPane.getChildren().remove(p.getShadow());
+                    combatService.deathAnimation(p, () -> {
+                        mainPane.getChildren().remove(p.getImageView());
+                        mainPane.getChildren().remove(p.getShadow());
+                    });
                 }
             }
         });

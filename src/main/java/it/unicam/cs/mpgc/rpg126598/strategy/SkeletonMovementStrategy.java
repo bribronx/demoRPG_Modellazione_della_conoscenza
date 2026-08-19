@@ -27,8 +27,6 @@ public class SkeletonMovementStrategy implements EnemyMovementStrategy {
     private final Image[] walkRightFrames = loadFramesService.loadFrames("skeleton", "walk_right", "skeleton_walk_right", 4);
     private final Image[] walkUpFrames = loadFramesService.loadFrames("skeleton", "walk_up", "skeleton_walk_up", 4);
 
-    private final AnimationService animationService = new AnimationService();
-
     double dirX=0;
     double dirY=0;
 
@@ -80,6 +78,7 @@ public class SkeletonMovementStrategy implements EnemyMovementStrategy {
         
         ImageView imageView = enemy.getImageView();
         if (imageView != null) {
+            AnimationService animationService = enemy.getAnimationService();
             if (enemy.getState() == EntityState.CHASING) {
                 if (Math.abs(dirX) > Math.abs(dirY)) {
                     if (dirX > 0) {
