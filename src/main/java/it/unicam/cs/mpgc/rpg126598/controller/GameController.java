@@ -48,6 +48,7 @@ public class GameController {
         p.setImageView(player);
         enemyMovementService.setCombatService(combatService);
         combatService.setParentPane(mainPane);
+        combatService.setMapBuilderService(mapBuilderService);
 
         combatService.setCombatListener(new CombatService.CombatListener() {
             @Override
@@ -89,6 +90,7 @@ public class GameController {
                 if (!p.isDead()) {
                     enemyMovementService.updateEnemies(p, now);
                     combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
+                    camera.updateCamera();
                 }
             }
         };
@@ -131,8 +133,13 @@ public class GameController {
         camera.updateCamera();
 
         if (event.getCode() == KeyCode.SPACE) {
-            combatService.executeAttack(p, enemyMovementService.getEnemies(), playerMeleeAttack);
-            combatService.attackAnimation(p);
+            long cooldownMillis = (long) (playerMeleeAttack.getCooldown() * 1000.0);
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - p.getLastAttackTime() >= cooldownMillis) {
+                combatService.executeAttack(p, enemyMovementService.getEnemies(), playerMeleeAttack);
+                combatService.attackAnimation(p);
+                p.setLastAttackTime(currentTime);
+            }
         }
     }
 }

@@ -10,7 +10,6 @@ public abstract class Enemy extends Entity {
 
     private EnemyMovementStrategy movementStrategy;
     private AttackStrategy attackStrategy;
-    private long lastAttackTime = 0;
     private double aggroRange = 120.0;
     private double attackRange = 20.0;
 
@@ -59,14 +58,6 @@ public abstract class Enemy extends Entity {
 
     public void setAttackStrategy(AttackStrategy attackStrategy) {
         this.attackStrategy = attackStrategy;
-    }
-
-    public long getLastAttackTime() {
-        return lastAttackTime;
-    }
-
-    public void setLastAttackTime(long lastAttackTime) {
-        this.lastAttackTime = lastAttackTime;
     }
 
     public void update(Player target, List<Enemy> enemies, MapBuilderService mapBuilderService, CollisionService collisionService, double deltaTime) {

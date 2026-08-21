@@ -58,7 +58,6 @@ public class PlayerMovementService {
                                 player.setDirection(Direction.RIGHT);
                                 break;
                         default:
-                                animationService.walkingAnimation(imageP, downFrames, 100);
                                 break;
                 }
                 if (deltaX != 0 || deltaY != 0) {

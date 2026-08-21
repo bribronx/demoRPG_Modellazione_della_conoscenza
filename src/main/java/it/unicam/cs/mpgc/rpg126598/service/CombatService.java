@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.ArrayList;
 
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.Enemy;
+import it.unicam.cs.mpgc.rpg126598.model.Slime;
+import it.unicam.cs.mpgc.rpg126598.model.EntityState;
 import it.unicam.cs.mpgc.rpg126598.model.Targetable;
 import it.unicam.cs.mpgc.rpg126598.model.Zombie;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
@@ -30,7 +33,8 @@ public class CombatService {
     private final CollisionService collisionService;
     private final LoadFramesService loadFramesService = new LoadFramesService();
     private CombatListener listener;
-    
+    private MapBuilderService mapBuilderService;
+
     private Pane parentPane;
     private final List<BoneProjectile> projectiles = new ArrayList<>();
     private Image[] boneFrames;
@@ -39,12 +43,43 @@ public class CombatService {
         this.collisionService = collisionService;
     }
 
+    public void setMapBuilderService(MapBuilderService mapBuilderService) {
+        this.mapBuilderService = mapBuilderService;
+    }
+
     public void setParentPane(Pane parentPane) {
         this.parentPane = parentPane;
     }
 
     public void setCombatListener(CombatListener listener) {
         this.listener = listener;
+    }
+
+    public void tryEnemyAttack(Enemy enemy, Player targetPlayer) {
+        if (enemy == null || targetPlayer == null || targetPlayer.isDead() || enemy.getAttackStrategy() == null) {
+            return;
+        }
+
+        boolean inRange = false;
+        if (enemy instanceof Slime slime) {
+            if (slime.getState() == EntityState.MOVING) {
+                List<Entity> targets = slime.getAttackStrategy().getTargetableEntitiesInRange(slime, List.of(targetPlayer), collisionService);
+                inRange = !targets.isEmpty();
+            }
+        } else {
+            double dist = Math.hypot(targetPlayer.getGlobalX() - enemy.getGlobalX(),
+                                     targetPlayer.getGlobalY() - enemy.getGlobalY());
+            inRange = (dist <= enemy.getAttackRange());
+        }
+
+        if (inRange) {
+            long cooldownMillis = (long) (enemy.getAttackStrategy().getCooldown() * 1000.0);
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - enemy.getLastAttackTime() >= cooldownMillis) {
+                executeAttack(enemy, List.of(targetPlayer), enemy.getAttackStrategy());
+                enemy.setLastAttackTime(currentTime);
+            }
+        }
     }
 
     public void executeAttack(Entity attacker, List<? extends Entity> targets, AttackStrategy attackStrategy) {
@@ -66,6 +101,7 @@ public class CombatService {
                 if (listener != null) {
                     listener.onDamageDealt(attacker, target, finalDamage);
                 }
+                applyKnockback(attacker, target, 16.0);
                 if (targetable.isDead()) {
                     if (listener != null) {
                         listener.onEntityDeath(target, attacker);
@@ -75,9 +111,79 @@ public class CombatService {
         }
     }
 
+    public void applyKnockback(Entity attacker, Entity target, double distance) {
+        if (attacker == null || target == null)
+            return;
+        double dx = target.getGlobalX() - attacker.getGlobalX();
+        double dy = target.getGlobalY() - attacker.getGlobalY();
+        double len = Math.hypot(dx, dy);
+
+        double dirX = 0;
+        double dirY = 0;
+
+        if (len > 0.0001) {
+            dirX = dx / len;
+            dirY = dy / len;
+        } else if (attacker.getDirection() != null) {
+            switch (attacker.getDirection()) {
+                case UP -> dirY = -1;
+                case DOWN -> dirY = 1;
+                case LEFT -> dirX = -1;
+                case RIGHT -> dirX = 1;
+            }
+        } else {
+            dirY = 1;
+        }
+
+        applyKnockbackDirection(target, dirX, dirY, distance);
+    }
+
+    public void applyKnockback(double sourceX, double sourceY, Entity target, double distance) {
+        if (target == null)
+            return;
+        double dx = target.getGlobalX() - sourceX;
+        double dy = target.getGlobalY() - sourceY;
+        double len = Math.hypot(dx, dy);
+
+        double dirX = 0;
+        double dirY = 0;
+
+        if (len > 0.0001) {
+            dirX = dx / len;
+            dirY = dy / len;
+        } else {
+            dirY = 1;
+        }
+
+        applyKnockbackDirection(target, dirX, dirY, distance);
+    }
+
+    private void applyKnockbackDirection(Entity target, double dirX, double dirY, double distance) {
+        if (target == null || distance <= 0)
+            return;
+        int[][] collisionMap = mapBuilderService != null ? mapBuilderService.getCollisionMap() : null;
+
+        double step = 1.0;
+        int steps = (int) Math.ceil(distance / step);
+        double stepX = dirX * step;
+        double stepY = dirY * step;
+
+        for (int i = 0; i < steps; i++) {
+            if (stepX != 0 && (collisionService == null || collisionMap == null
+                    || !collisionService.checkTileCollision(target, stepX, 0, collisionMap))) {
+                target.moveX(stepX);
+            }
+            if (stepY != 0 && (collisionService == null || collisionMap == null
+                    || !collisionService.checkTileCollision(target, 0, stepY, collisionMap))) {
+                target.moveY(stepY);
+            }
+        }
+    }
+
     public void spawnBones(Entity attacker) {
-        if (parentPane == null) return;
-        
+        if (parentPane == null)
+            return;
+
         if (boneFrames == null) {
             boneFrames = loadFramesService.loadFrames("skeleton", "bone_sprites", "bone_frame", 8);
         }
@@ -119,12 +225,12 @@ public class CombatService {
 
             Bounds projHitbox = new BoundingBox(proj.getX(), proj.getY(), 8, 8);
 
-
             if (projHitbox.intersects(playerHitbox)) {
                 player.takeDamage(proj.getDamage());
                 if (listener != null) {
                     listener.onDamageDealt(null, player, proj.getDamage());
                 }
+                applyKnockback(proj.getX(), proj.getY(), player, 16.0);
                 if (player.isDead()) {
                     if (listener != null) {
                         listener.onEntityDeath(player, null);
@@ -148,7 +254,7 @@ public class CombatService {
 
     public void attackAnimation(Entity attacker) {
         String entityName = attacker.getClass().getSimpleName().toLowerCase();
-        
+
         if (attacker instanceof Zombie) {
             return;
         }
@@ -166,9 +272,10 @@ public class CombatService {
             } else {
                 frameCount = 3;
             }
+            frameDuration = 130;
         } else if (attacker instanceof Skeleton) {
             frameCount = 4;
-            frameDuration = 250; 
+            frameDuration = 250;
         }
 
         Image[] frames = loadFramesService.loadFrames(entityName, folder2, prefix, frameCount);
@@ -189,7 +296,7 @@ public class CombatService {
 
         if (entity instanceof Player) {
             frameCount = 2;
-            frameDuration = 300;
+            frameDuration = 500;
         } else if (entity instanceof Skeleton) {
             frameCount = 4;
             frameDuration = 150;

@@ -8,7 +8,7 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.paint.Color;
 import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 
-public abstract class Entity implements Targetable{
+public abstract class Entity implements Targetable {
     private double speed;
     private int health;
     private int maxHealth;
@@ -23,6 +23,15 @@ public abstract class Entity implements Targetable{
     private EntityState state = EntityState.IDLE;
     private Direction direction = Direction.DOWN;
     private AnimationService animationService;
+    private long lastAttackTime;
+
+    public long getLastAttackTime() {
+        return lastAttackTime;
+    }
+
+    public void setLastAttackTime(long lastAttackTime) {
+        this.lastAttackTime = lastAttackTime;
+    }
 
     public AnimationService getAnimationService() {
         if (animationService == null) {
@@ -177,7 +186,7 @@ public abstract class Entity implements Targetable{
         moveY(deltaY);
     }
 
-     public EntityState getState() {
+    public EntityState getState() {
         return state;
     }
 
@@ -186,15 +195,13 @@ public abstract class Entity implements Targetable{
     }
 
     @Override
-    public void takeDamage(int amount){
+    public void takeDamage(int amount) {
         this.setHealth(this.getHealth() - amount);
     }
 
     @Override
-    public boolean isDead(){
+    public boolean isDead() {
         return this.getHealth() <= 0;
     }
 
-
-    
 }
