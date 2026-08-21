@@ -6,6 +6,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Ellipse;
 import javafx.scene.paint.Color;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.ColorInput;
+import javafx.scene.effect.Effect;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 
 public abstract class Entity implements Targetable {
@@ -194,14 +200,47 @@ public abstract class Entity implements Targetable {
         this.state = state;
     }
 
+    private transient Effect originalEffect;
+    private transient PauseTransition hitEffectTimer;
+
     @Override
     public void takeDamage(int amount) {
         this.setHealth(this.getHealth() - amount);
+        playHitEffect();
+    }
+
+    public void playHitEffect() {
+        if (imageView == null || imageView.getImage() == null) {
+            return;
+        }
+
+        if (hitEffectTimer != null) {
+            hitEffectTimer.stop();
+        } else {
+            originalEffect = imageView.getEffect();
+        }
+
+        double width = imageView.getBoundsInLocal().getWidth();
+        double height = imageView.getBoundsInLocal().getHeight();
+        if (width <= 0) width = imageView.getImage().getWidth();
+        if (height <= 0) height = imageView.getImage().getHeight();
+
+        ColorInput redOverlay = new ColorInput(0, 0, width, height, Color.color(1.0, 0.15, 0.15, 0.75));
+        Blend redBlend = new Blend(BlendMode.SRC_ATOP, null, redOverlay);
+
+        imageView.setEffect(redBlend);
+
+        hitEffectTimer = new PauseTransition(Duration.millis(180));
+        hitEffectTimer.setOnFinished(e -> {
+            imageView.setEffect(originalEffect);
+            hitEffectTimer = null;
+            originalEffect = null;
+        });
+        hitEffectTimer.play();
     }
 
     @Override
     public boolean isDead() {
         return this.getHealth() <= 0;
     }
-
 }

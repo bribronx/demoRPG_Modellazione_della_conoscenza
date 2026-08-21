@@ -11,7 +11,7 @@ import javafx.geometry.Bounds;
 
 public class MeleeAttackStrategy implements AttackStrategy{
 
-    private double cooldown = 1;
+    private double cooldown = 0.5;
 
     public MeleeAttackStrategy() {
     }
