@@ -5,8 +5,9 @@ import it.unicam.cs.mpgc.rpg126598.model.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 import java.util.List;
+import java.util.Set;
 
 
 
@@ -31,37 +32,59 @@ public class PlayerMovementService {
                 this.mapBuilderService = mapBuilderService;
         }
 
-        public void makeMove(KeyEvent e, List<Enemy> enemies) {
+        public void updateMovement(Set<KeyCode> activeKeys, List<Enemy> enemies) {
+                AnimationService animationService = player.getAnimationService();
+                if (animationService.isAttacking()) {
+                        return;
+                }
+
                 ImageView imageP = player.getImageView();
                 double deltaX = 0;
                 double deltaY = 0;
-                AnimationService animationService = player.getAnimationService();
-                switch (e.getCode()) {
-                        case W:
-                                animationService.walkingAnimation(imageP, upFrames, 100);
-                                deltaY = -player.getSpeed();
-                                player.setDirection(Direction.UP);
-                                break;
-                        case S:
-                                animationService.walkingAnimation(imageP, downFrames, 100);
-                                deltaY = player.getSpeed();
-                                player.setDirection(Direction.DOWN);
-                                break;
-                        case A:
-                                animationService.walkingAnimation(imageP, leftFrames, 100);
-                                deltaX = -player.getSpeed();
-                                player.setDirection(Direction.LEFT);
-                                break;
-                        case D:
-                                animationService.walkingAnimation(imageP, rightFrames, 100);
-                                deltaX = player.getSpeed();
-                                player.setDirection(Direction.RIGHT);
-                                break;
-                        default:
-                                break;
+
+                if (activeKeys.contains(KeyCode.W) || activeKeys.contains(KeyCode.UP)) {
+                        deltaY -= player.getSpeed();
                 }
+                if (activeKeys.contains(KeyCode.S) || activeKeys.contains(KeyCode.DOWN)) {
+                        deltaY += player.getSpeed();
+                }
+                if (activeKeys.contains(KeyCode.A) || activeKeys.contains(KeyCode.LEFT)) {
+                        deltaX -= player.getSpeed();
+                }
+                if (activeKeys.contains(KeyCode.D) || activeKeys.contains(KeyCode.RIGHT)) {
+                        deltaX += player.getSpeed();
+                }
+
+                if (deltaX != 0 && deltaY != 0) {
+                        deltaX *= 0.7;
+                        deltaY *= 0.7;
+                }
+
                 if (deltaX != 0 || deltaY != 0) {
+                        if (deltaY < 0 && (player.getDirection() == Direction.UP || deltaX == 0)) {
+                                player.setDirection(Direction.UP);
+                        } else if (deltaY > 0 && (player.getDirection() == Direction.DOWN || deltaX == 0)) {
+                                player.setDirection(Direction.DOWN);
+                        } else if (deltaX < 0) {
+                                player.setDirection(Direction.LEFT);
+                        } else if (deltaX > 0) {
+                                player.setDirection(Direction.RIGHT);
+                        } else if (deltaY < 0) {
+                                player.setDirection(Direction.UP);
+                        } else if (deltaY > 0) {
+                                player.setDirection(Direction.DOWN);
+                        }
+
+                        switch (player.getDirection()) {
+                                case UP -> animationService.walkingAnimation(imageP, upFrames, 100);
+                                case DOWN -> animationService.walkingAnimation(imageP, downFrames, 100);
+                                case LEFT -> animationService.walkingAnimation(imageP, leftFrames, 100);
+                                case RIGHT -> animationService.walkingAnimation(imageP, rightFrames, 100);
+                        }
+
                         tryMovePlayer(deltaX, deltaY, enemies);
+                } else {
+                        animationService.stopWalking();
                 }
         }
 

@@ -16,11 +16,13 @@ import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
+import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import java.util.HashSet;
+import java.util.Set;
 
 public class GameController {
 
@@ -41,6 +43,7 @@ public class GameController {
     private final CombatService combatService = new CombatService(new CollisionService());
     private final AttackStrategy playerMeleeAttack = new MeleeAttackStrategy();
 
+    private final Set<KeyCode> pressedKeys = new HashSet<>();
     private AnimationTimer gameLoop;
 
     @FXML
@@ -84,10 +87,20 @@ public class GameController {
         camera = new PlayerCameraService(p, mainPane, 4, map.getWidth(), map.getHeight());
         camera.updateCamera();
 
+        if (mainPane.getScene() != null) {
+            setupKeyListeners(mainPane.getScene());
+        }
+        mainPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
+            if (newScene != null) {
+                setupKeyListeners(newScene);
+            }
+        });
+
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 if (!p.isDead()) {
+                    movementP.updateMovement(pressedKeys, enemyMovementService.getEnemies());
                     enemyMovementService.updateEnemies(p, now);
                     combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
                     camera.updateCamera();
@@ -124,22 +137,23 @@ public class GameController {
         enemyMovementService.addEnemy(skeleton2);
     }
 
-    @FXML
-    public void update(KeyEvent event) {
-        if (p.isDead())
-            return;
+    private void setupKeyListeners(Scene scene) {
+        scene.setOnKeyPressed(event -> {
+            pressedKeys.add(event.getCode());
 
-        movementP.makeMove(event, enemyMovementService.getEnemies());
-        camera.updateCamera();
-
-        if (event.getCode() == KeyCode.SPACE) {
-            long cooldownMillis = (long) (playerMeleeAttack.getCooldown() * 1000.0);
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - p.getLastAttackTime() >= cooldownMillis) {
-                combatService.executeAttack(p, enemyMovementService.getEnemies(), playerMeleeAttack);
-                combatService.attackAnimation(p);
-                p.setLastAttackTime(currentTime);
+            if (event.getCode() == KeyCode.SPACE && !p.isDead()) {
+                long cooldownMillis = (long) (playerMeleeAttack.getCooldown() * 1000.0);
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - p.getLastAttackTime() >= cooldownMillis) {
+                    combatService.executeAttack(p, enemyMovementService.getEnemies(), playerMeleeAttack);
+                    combatService.attackAnimation(p);
+                    p.setLastAttackTime(currentTime);
+                }
             }
-        }
+        });
+
+        scene.setOnKeyReleased(event -> {
+            pressedKeys.remove(event.getCode());
+        });
     }
 }

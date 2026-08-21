@@ -118,6 +118,16 @@ public class AnimationService {
         deathTimeline.play();
     }
 
+    public boolean isAttacking() {
+        return attackTimeline != null && attackTimeline.getStatus() == Animation.Status.RUNNING;
+    }
+
+    public void stopWalking() {
+        if (walkingTimeline != null) {
+            walkingTimeline.stop();
+        }
+    }
+
     public void stopAll() {
         if (walkingTimeline != null) {
             walkingTimeline.stop();

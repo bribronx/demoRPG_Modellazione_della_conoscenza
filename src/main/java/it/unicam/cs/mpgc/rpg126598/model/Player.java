@@ -8,7 +8,7 @@ public class Player extends Entity {
     private ImageView player;
 
     public Player() {
-        this.setSpeed(4);
+        this.setSpeed(0.6);
         this.setBoundBox(5, 8, 2, 5);
         this.setHealth(100);
         this.setMaxHealth(100);
