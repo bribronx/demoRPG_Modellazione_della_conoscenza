@@ -19,3 +19,25 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+
+.defense-bar {
+    -fx-border-color: black;
+    -fx-border-width: 2.5px;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+}
+
+.defense-bar .track {
+    -fx-background-color: #333333;
+    -fx-background-radius: 2px;
+    -fx-background-insets: 0;
+}
+
+.defense-bar .bar {
+    -fx-background-color: #a3acb2;
+    -fx-background-radius: 2px;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
