@@ -33,6 +33,9 @@ public class PlayerController {
     @FXML
     private ProgressBar defenseBar;
 
+    @FXML
+    private VBox deathScreen;
+
     private Player player;
     private PlayerMovementService movementService;
     private PlayerCameraService cameraService;
@@ -155,6 +158,10 @@ public class PlayerController {
         } else {
             defenseBar.setProgress(0);
         }
+    }
+
+    public void showDeathScreen() {
+        deathScreen.setVisible(true);
     }
 
 

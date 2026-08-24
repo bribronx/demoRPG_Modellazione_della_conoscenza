@@ -75,6 +75,7 @@ public class GameController {
                         mainPane.getChildren().remove(playerController.getPlayer().getImageView());
                         mainPane.getChildren().remove(playerController.getPlayer().getShadow());
                     });
+                    playerController.showDeathScreen();
                 }
             }
         });

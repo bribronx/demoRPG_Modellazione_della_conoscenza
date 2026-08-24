@@ -41,3 +41,24 @@
     -fx-background-insets: 0;
     -fx-padding: 0;
 }
+
+
+.death-screen {
+    -fx-background-color: rgba(30, 30, 30, 0.75);
+}
+
+.death-screen .label {
+    -fx-text-fill: #e74c3c;
+}
+
+.menu-button {
+    -fx-background-color: #a5a5a5;
+    -fx-text-fill: white;
+    -fx-font-size: 16px;
+    -fx-font-family: 'Book Antiqua';
+    -fx-font-weight: bold;
+    -fx-background-radius: 3px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.3), 5, 0.5, 2, 2);
+}
+
