@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+
+<Pane fx:id="hudPane" pickOnBounds="false" prefHeight="576.0" prefWidth="768.0" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.unicam.cs.mpgc.rpg126598.controller.PlayerController">
+    <children>
+        <VBox fx:id="stats" layoutX="20.0" layoutY="20.0" spacing="6.0">
+            <children>
+                <ProgressBar fx:id="hpBar" prefHeight="16.0" prefWidth="200.0" progress="1.0" styleClass="hp-bar" />
+            </children>
+        </VBox>
+    </children>
+</Pane>

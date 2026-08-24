@@ -16,13 +16,12 @@ import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 
 public abstract class Entity implements Targetable {
     private double speed;
-    private int health;
-    private int maxHealth;
-    private int defense;
-    private int maxHp;
-    private int damage;
-    private int level;
-    private int xp;
+    private double health;
+    private double maxHealth;
+    private double defense;
+    private double damage;
+    private double level;
+    private double xp;
     private ImageView imageView;
     private Rectangle boundBox;
     private Ellipse shadow;
@@ -86,59 +85,51 @@ public abstract class Entity implements Targetable {
         return shadow;
     }
 
-    public int getXp() {
+    public double getXp() {
         return xp;
     }
 
-    public void setXp(int xp) {
+    public void setXp(double xp) {
         this.xp = xp;
     }
 
-    public int getLevel() {
+    public double getLevel() {
         return level;
     }
 
-    public void setLevel(int level) {
+    public void setLevel(double level) {
         this.level = level;
     }
 
-    public int getDamage() {
+    public double getDamage() {
         return damage;
     }
 
-    public void setDamage(int damage) {
+    public void setDamage(double damage) {
         this.damage = damage;
     }
 
-    public int getMaxHp() {
-        return maxHp;
-    }
-
-    public void setMaxHp(int maxHp) {
-        this.maxHp = maxHp;
-    }
-
-    public int getDefense() {
+    public double getDefense() {
         return defense;
     }
 
-    public void setDefense(int defense) {
+    public void setDefense(double defense) {
         this.defense = defense;
     }
 
-    public int getMaxHealth() {
+    public double getMaxHealth() {
         return maxHealth;
     }
 
-    public void setMaxHealth(int maxHealth) {
+    public void setMaxHealth(double maxHealth) {
         this.maxHealth = maxHealth;
     }
 
-    public int getHealth() {
+    public double getHealth() {
         return health;
     }
 
-    public void setHealth(int health) {
+    public void setHealth(double health) {
         this.health = health;
     }
 
@@ -204,7 +195,7 @@ public abstract class Entity implements Targetable {
     private transient PauseTransition hitEffectTimer;
 
     @Override
-    public void takeDamage(int amount) {
+    public void takeDamage(double amount) {
         this.setHealth(this.getHealth() - amount);
         playHitEffect();
     }

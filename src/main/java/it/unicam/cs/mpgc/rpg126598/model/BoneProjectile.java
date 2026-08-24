@@ -8,7 +8,7 @@ public class BoneProjectile {
     private double y;
     private final double vx;
     private final double vy;
-    private final int damage;
+    private final double damage;
     private final double maxRange = 150.0;
     private double distanceTraveled = 0;
     private final ImageView imageView;
@@ -16,12 +16,12 @@ public class BoneProjectile {
     private int currentFrame = 0;
     private long lastFrameTime = 0;
 
-    public BoneProjectile(double startX, double startY, double vx, double vy, int damage, Image[] frames) {
+    public BoneProjectile(double startX, double startY, double vx, double vy, double damage2, Image[] frames) {
         this.x = startX;
         this.y = startY;
         this.vx = vx;
         this.vy = vy;
-        this.damage = damage;
+        this.damage = damage2;
         this.frames = frames;
 
         this.imageView = new ImageView();
@@ -39,7 +39,7 @@ public class BoneProjectile {
     public double getY() { return y; }
     public double getVx() { return vx; }
     public double getVy() { return vy; }
-    public int getDamage() { return damage; }
+    public double getDamage() { return damage; }
     public ImageView getImageView() { return imageView; }
 
     public void update() {

@@ -10,19 +10,11 @@ import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
-import it.unicam.cs.mpgc.rpg126598.service.PlayerCameraService;
-import it.unicam.cs.mpgc.rpg126598.service.PlayerMovementService;
-import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
-import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
-import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.image.ImageView;
-import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
-import java.util.HashSet;
-import java.util.Set;
 
 public class GameController {
 
@@ -30,32 +22,35 @@ public class GameController {
     private Pane mainPane;
 
     @FXML
-    private ImageView player;
+    private ImageView playerImageView;
 
     @FXML
     private Canvas map;
 
-    private final Player p = new Player();
-    private PlayerCameraService camera;
-    MapBuilderService mapBuilderService = new MapBuilderService();
-    private final PlayerMovementService movementP = new PlayerMovementService(p, mapBuilderService);
+    @FXML
+    private PlayerController playerController;
+
+    private final MapBuilderService mapBuilderService = new MapBuilderService();
     private final EnemyMovementService enemyMovementService = new EnemyMovementService(mapBuilderService);
     private final CombatService combatService = new CombatService(new CollisionService());
-    private final AttackStrategy playerMeleeAttack = new MeleeAttackStrategy();
 
-    private final Set<KeyCode> pressedKeys = new HashSet<>();
     private AnimationTimer gameLoop;
 
     @FXML
     public void initialize() {
-        p.setImageView(player);
         enemyMovementService.setCombatService(combatService);
         combatService.setParentPane(mainPane);
         combatService.setMapBuilderService(mapBuilderService);
 
+        mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
+
+        playerController.initServices(playerImageView, mapBuilderService, mainPane, map.getWidth(), map.getHeight());
+        playerController.setCombatService(combatService);
+        playerController.setEnemyMovementService(enemyMovementService);
+
         combatService.setCombatListener(new CombatService.CombatListener() {
             @Override
-            public void onDamageDealt(Entity attacker, Entity target, int damage) {
+            public void onDamageDealt(Entity attacker, Entity target, double damage) {
                 String attackerName = attacker != null ? attacker.getClass().getSimpleName() : "Osso";
                 System.out.println(attackerName + " infligge " + damage +
                         " danni a " + target.getClass().getSimpleName() +
@@ -73,37 +68,33 @@ public class GameController {
                     });
                 } else if (deadEntity instanceof Player) {
                     System.out.println("GAME OVER!");
+                    playerController.updateHealthBar();
                     gameLoop.stop();
-                    combatService.deathAnimation(p, () -> {
-                        mainPane.getChildren().remove(p.getImageView());
-                        mainPane.getChildren().remove(p.getShadow());
+                    combatService.deathAnimation(playerController.getPlayer(), () -> {
+                        mainPane.getChildren().remove(playerController.getPlayer().getImageView());
+                        mainPane.getChildren().remove(playerController.getPlayer().getShadow());
                     });
                 }
             }
         });
 
-        // mainPane.getChildren().add(1, p.getShadow());
-        mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
-        camera = new PlayerCameraService(p, mainPane, 4, map.getWidth(), map.getHeight());
-        camera.updateCamera();
-
         if (mainPane.getScene() != null) {
-            setupKeyListeners(mainPane.getScene());
+            playerController.setupKeyListeners(mainPane.getScene());
         }
         mainPane.sceneProperty().addListener((obs, oldScene, newScene) -> {
             if (newScene != null) {
-                setupKeyListeners(newScene);
+                playerController.setupKeyListeners(newScene);
             }
         });
 
         gameLoop = new AnimationTimer() {
             @Override
             public void handle(long now) {
+                Player p = playerController.getPlayer();
                 if (!p.isDead()) {
-                    movementP.updateMovement(pressedKeys, enemyMovementService.getEnemies());
+                    playerController.update();
                     enemyMovementService.updateEnemies(p, now);
                     combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
-                    camera.updateCamera();
                 }
             }
         };
@@ -135,25 +126,5 @@ public class GameController {
         enemyMovementService.addEnemy(zombie1);
         enemyMovementService.addEnemy(skeleton1);
         enemyMovementService.addEnemy(skeleton2);
-    }
-
-    private void setupKeyListeners(Scene scene) {
-        scene.setOnKeyPressed(event -> {
-            pressedKeys.add(event.getCode());
-
-            if (event.getCode() == KeyCode.SPACE && !p.isDead()) {
-                long cooldownMillis = (long) (playerMeleeAttack.getCooldown() * 1000.0);
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - p.getLastAttackTime() >= cooldownMillis) {
-                    combatService.executeAttack(p, enemyMovementService.getEnemies(), playerMeleeAttack);
-                    combatService.attackAnimation(p);
-                    p.setLastAttackTime(currentTime);
-                }
-            }
-        });
-
-        scene.setOnKeyReleased(event -> {
-            pressedKeys.remove(event.getCode());
-        });
     }
 }

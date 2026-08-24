@@ -25,7 +25,7 @@ import javafx.util.Duration;
 public class CombatService {
 
     public interface CombatListener {
-        void onDamageDealt(Entity attacker, Entity target, int damage);
+        void onDamageDealt(Entity attacker, Entity target, double finalDamage);
 
         void onEntityDeath(Entity deadEntity, Entity killer);
     }
@@ -95,7 +95,7 @@ public class CombatService {
         List<Entity> targetableEntities = attackStrategy.getTargetableEntitiesInRange(attacker, targets,
                 collisionService);
         for (Entity target : targetableEntities) {
-            int finalDamage = Math.max(1, attacker.getDamage() - target.getDefense());
+            double finalDamage = Math.max(1, attacker.getDamage() - target.getDefense());
             if (target instanceof Targetable targetable) {
                 targetable.takeDamage(finalDamage);
                 if (listener != null) {
@@ -190,7 +190,7 @@ public class CombatService {
 
         double startX = attacker.getGlobalX();
         double startY = attacker.getGlobalY();
-        int damage = attacker.getDamage();
+        double damage = attacker.getDamage();
 
         double speed = 1.0;
         double vx = 0;

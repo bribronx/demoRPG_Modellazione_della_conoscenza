@@ -11,7 +11,7 @@ import javafx.geometry.Bounds;
 public class SlimeAttackStrategy implements AttackStrategy {
 
     private double cooldown = 0.5;
-    // Piccolo margine di contatto per rilevare l'impatto del salto
+    // Margine di contatto per rilevare l'impatto del salto
     private double margin = 3.0;
 
     public SlimeAttackStrategy() {
