@@ -69,6 +69,7 @@ public class GameController {
                 } else if (deadEntity instanceof Player) {
                     System.out.println("GAME OVER!");
                     playerController.updateHealthBar();
+                    playerController.updateDefenseBar();
                     gameLoop.stop();
                     combatService.deathAnimation(playerController.getPlayer(), () -> {
                         mainPane.getChildren().remove(playerController.getPlayer().getImageView());

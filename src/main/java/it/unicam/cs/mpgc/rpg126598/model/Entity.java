@@ -19,6 +19,7 @@ public abstract class Entity implements Targetable {
     private double health;
     private double maxHealth;
     private double defense;
+    private double maxDefense;
     private double damage;
     private double level;
     private double xp;
@@ -117,6 +118,14 @@ public abstract class Entity implements Targetable {
         this.defense = defense;
     }
 
+    public double getMaxDefense() {
+        return maxDefense;
+    }
+
+    public void setMaxDefense(double maxDefense) {
+        this.maxDefense = maxDefense;
+    }
+
     public double getMaxHealth() {
         return maxHealth;
     }
@@ -196,7 +205,18 @@ public abstract class Entity implements Targetable {
 
     @Override
     public void takeDamage(double amount) {
-        this.setHealth(this.getHealth() - amount);
+        if (this.defense > 0) {
+            if (amount <= this.defense) {
+                this.defense -= amount;
+                amount = 0;
+            } else {
+                amount -= this.defense;
+                this.defense = 0;
+            }
+        }
+        if (amount > 0) {
+            this.setHealth(this.getHealth() - amount);
+        }
         playHitEffect();
     }
 

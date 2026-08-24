@@ -95,7 +95,7 @@ public class CombatService {
         List<Entity> targetableEntities = attackStrategy.getTargetableEntitiesInRange(attacker, targets,
                 collisionService);
         for (Entity target : targetableEntities) {
-            double finalDamage = Math.max(1, attacker.getDamage() - target.getDefense());
+            double finalDamage = Math.max(1, attacker.getDamage());
             if (target instanceof Targetable targetable) {
                 targetable.takeDamage(finalDamage);
                 if (listener != null) {

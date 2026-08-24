@@ -30,6 +30,8 @@ public class PlayerController {
     @FXML
     private ProgressBar hpBar;
 
+    @FXML
+    private ProgressBar defenseBar;
 
     private Player player;
     private PlayerMovementService movementService;
@@ -53,6 +55,10 @@ public class PlayerController {
             hpBar.setPrefWidth(player.getMaxHealth() * HP_SCALE);
             hpBar.setProgress(player.getMaxHealth() > 0 ? player.getHealth() / player.getMaxHealth() : 0);
         }
+        if (defenseBar != null && player != null) {
+            defenseBar.setPrefWidth(player.getMaxDefense() * HP_SCALE);
+            defenseBar.setProgress(player.getMaxDefense() > 0 ? player.getDefense() / player.getMaxDefense() : 0);
+        }
     }
 
     public void initServices(ImageView playerImageView, MapBuilderService mapBuilderService, Pane mainPane,
@@ -64,6 +70,10 @@ public class PlayerController {
         if (this.hpBar != null) {
             this.hpBar.setPrefWidth(player.getMaxHealth() * HP_SCALE);
             this.hpBar.setProgress(player.getMaxHealth() > 0 ? player.getHealth() / player.getMaxHealth() : 0);
+        }
+        if (this.defenseBar != null) {
+            this.defenseBar.setPrefWidth(player.getMaxDefense() * HP_SCALE);
+            this.defenseBar.setProgress(player.getMaxDefense() > 0 ? player.getDefense() / player.getMaxDefense() : 0);
         }
 
         this.cameraService.updateCamera();
@@ -120,6 +130,7 @@ public class PlayerController {
             }
         }
         updateHealthBar();
+        updateDefenseBar();
     }
 
     public void updateHealthBar() {
@@ -131,6 +142,19 @@ public class PlayerController {
                 : 0.0;
 
         hpBar.setProgress(progress);
+    }
+
+    public void updateDefenseBar() {
+        if (defenseBar == null || player == null) return;
+        if (player.getMaxDefense() > 0) {
+            defenseBar.setPrefWidth(player.getMaxDefense() * HP_SCALE);
+            double progress = (player.isDead() || player.getDefense() <= 0)
+                    ? 0.0
+                    : Math.max(0.0, Math.min(1.0, player.getDefense() / player.getMaxDefense()));
+            defenseBar.setProgress(progress);
+        } else {
+            defenseBar.setProgress(0);
+        }
     }
 
 
