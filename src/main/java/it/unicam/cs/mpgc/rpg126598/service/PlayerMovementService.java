@@ -1,7 +1,7 @@
 package it.unicam.cs.mpgc.rpg126598.service;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
-import it.unicam.cs.mpgc.rpg126598.model.Direction;
+import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -91,10 +91,10 @@ public class PlayerMovementService {
         private void tryMovePlayer(double deltaX, double deltaY, List<Enemy> enemies) {
                 int[][] collisionMap = mapBuilderService.getCollisionMap();
 
-                if (deltaX != 0 && !collisionService.checkCollision(player, deltaX, 0, collisionMap, enemies)) {
+                if (deltaX != 0 && collisionService.checkCollision(player, deltaX, 0, collisionMap, enemies)) {
                         player.moveX(deltaX);
                 }
-                if (deltaY != 0 && !collisionService.checkCollision(player, 0, deltaY, collisionMap, enemies)) {
+                if (deltaY != 0 && collisionService.checkCollision(player, 0, deltaY, collisionMap, enemies)) {
                         player.moveY(deltaY);
                 }
         }

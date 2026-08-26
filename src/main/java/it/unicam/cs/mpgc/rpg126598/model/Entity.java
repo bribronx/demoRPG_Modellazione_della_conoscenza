@@ -12,6 +12,8 @@ import javafx.scene.effect.ColorInput;
 import javafx.scene.effect.Effect;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
+import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
+import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
 import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 
 public abstract class Entity implements Targetable {

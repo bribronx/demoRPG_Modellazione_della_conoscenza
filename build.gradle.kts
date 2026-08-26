@@ -1,9 +1,7 @@
 plugins {
     java
     application
-    id("org.javamodularity.moduleplugin") version "1.8.15"
-    id("org.openjfx.javafxplugin") version "0.0.14"
-    id("org.beryx.jlink") version "2.25.0"
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 group = "it.unicam.cs.mpgc.rpg126598"
@@ -36,18 +34,12 @@ javafx {
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.11.0")
     testImplementation("org.junit.jupiter:junit-jupiter-api:${junitVersion}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${junitVersion}")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 tasks.withType<Test> {
     useJUnitPlatform()
-}
-
-jlink {
-    imageZip.set(layout.buildDirectory.file("/distributions/app-${javafx.platform.classifier}.zip"))
-    options.set(listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages"))
-    launcher {
-        name = "app"
-    }
 }

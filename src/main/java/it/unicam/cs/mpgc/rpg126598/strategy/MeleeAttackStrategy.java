@@ -3,8 +3,8 @@ package it.unicam.cs.mpgc.rpg126598.strategy;
 import java.util.ArrayList;
 import java.util.List;
 
-import it.unicam.cs.mpgc.rpg126598.model.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;

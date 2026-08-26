@@ -2,7 +2,7 @@ package it.unicam.cs.mpgc.rpg126598.strategy;
 
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
-import it.unicam.cs.mpgc.rpg126598.model.EntityState;
+import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
@@ -42,10 +42,10 @@ public class ChasingMovementStrategy implements EnemyMovementStrategy {
                 others.add(target);
             }
 
-            if (deltaX != 0 && (collisionService == null || !collisionService.checkCollision(enemy, deltaX, 0, collisionMap, others))) {
+            if (deltaX != 0 && (collisionService == null || collisionService.checkCollision(enemy, deltaX, 0, collisionMap, others))) {
                 enemy.moveX(deltaX);
             }
-            if (deltaY != 0 && (collisionService == null || !collisionService.checkCollision(enemy, 0, deltaY, collisionMap, others))) {
+            if (deltaY != 0 && (collisionService == null || collisionService.checkCollision(enemy, 0, deltaY, collisionMap, others))) {
                 enemy.moveY(deltaY);
             }
         } else {

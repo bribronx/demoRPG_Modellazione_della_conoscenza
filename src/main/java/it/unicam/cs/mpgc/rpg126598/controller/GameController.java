@@ -6,15 +6,26 @@ import it.unicam.cs.mpgc.rpg126598.model.Player;
 import it.unicam.cs.mpgc.rpg126598.model.Skeleton;
 import it.unicam.cs.mpgc.rpg126598.model.Slime;
 import it.unicam.cs.mpgc.rpg126598.model.Zombie;
+import it.unicam.cs.mpgc.rpg126598.model.save.EnemySaveData;
+import it.unicam.cs.mpgc.rpg126598.model.save.GameSaveData;
+import it.unicam.cs.mpgc.rpg126598.model.save.PlayerSaveData;
+import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
+import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
+import it.unicam.cs.mpgc.rpg126598.service.JsonSaveLoadService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
+
+import java.io.File;
+import java.util.Objects;
 
 public class GameController {
 
@@ -33,8 +44,13 @@ public class GameController {
     private final MapBuilderService mapBuilderService = new MapBuilderService();
     private final EnemyMovementService enemyMovementService = new EnemyMovementService(mapBuilderService);
     private final CombatService combatService = new CombatService(new CollisionService());
+    private final JsonSaveLoadService saveLoadService = new JsonSaveLoadService();
+
+    private final String currentMapPath = "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt";
+    private final File defaultSaveFile = new File("saves/savegame.json");
 
     private AnimationTimer gameLoop;
+    private boolean isPaused = false;
 
     @FXML
     public void initialize() {
@@ -42,8 +58,9 @@ public class GameController {
         combatService.setParentPane(mainPane);
         combatService.setMapBuilderService(mapBuilderService);
 
-        mapBuilderService.generateMap(map, "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt");
+        mapBuilderService.generateMap(map, currentMapPath);
 
+        playerController.setGameController(this);
         playerController.initServices(playerImageView, mapBuilderService, mainPane, map.getWidth(), map.getHeight());
         playerController.setCombatService(combatService);
         playerController.setEnemyMovementService(enemyMovementService);
@@ -73,7 +90,6 @@ public class GameController {
                     gameLoop.stop();
                     combatService.deathAnimation(playerController.getPlayer(), () -> {
                         mainPane.getChildren().remove(playerController.getPlayer().getImageView());
-                        mainPane.getChildren().remove(playerController.getPlayer().getShadow());
                     });
                     playerController.showDeathScreen();
                 }
@@ -93,7 +109,7 @@ public class GameController {
             @Override
             public void handle(long now) {
                 Player p = playerController.getPlayer();
-                if (!p.isDead()) {
+                if (!p.isDead() && !isPaused) {
                     playerController.update();
                     enemyMovementService.updateEnemies(p, now);
                     combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
@@ -102,6 +118,10 @@ public class GameController {
         };
         gameLoop.start();
 
+        spawnInitialEnemies();
+    }
+
+    private void spawnInitialEnemies() {
         Slime slime1 = new Slime();
         Slime slime2 = new Slime();
         Zombie zombie1 = new Zombie();
@@ -128,5 +148,177 @@ public class GameController {
         enemyMovementService.addEnemy(zombie1);
         enemyMovementService.addEnemy(skeleton1);
         enemyMovementService.addEnemy(skeleton2);
+    }
+
+    public void saveDefaultGame() {
+        saveGame(defaultSaveFile);
+    }
+
+    public boolean loadDefaultGame() {
+        if (!defaultSaveFile.exists()) {
+            playerController.showNotification("Nessun salvataggio rapido trovato.");
+            return false;
+        }
+        return loadGame(defaultSaveFile);
+    }
+
+    private String formatSaveFileName(File file) {
+        if (file == null) return "";
+        return file.getName().replaceFirst("\\.json$", "");
+    }
+
+    public void saveGame(File file) {
+        try {
+            Player player = playerController.getPlayer();
+            GameSaveData saveData = saveLoadService.createSaveData(player, enemyMovementService.getEnemies(), currentMapPath);
+            saveLoadService.saveGame(saveData, file);
+            playerController.showNotification("Partita salvata: " + formatSaveFileName(file));
+            System.out.println("Partita salvata con successo in: " + file.getAbsolutePath());
+        } catch (Exception e) {
+            playerController.showNotification("Errore nel salvataggio: " + e.getMessage());
+            System.err.println("Errore nel salvataggio: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    public boolean loadGame(File file) {
+        try {
+            GameSaveData saveData = saveLoadService.loadGame(file);
+            applySaveData(saveData);
+            playerController.showNotification("Partita caricata: " + formatSaveFileName(file));
+            System.out.println("Partita caricata con successo da: " + file.getAbsolutePath());
+            return true;
+        } catch (Exception e) {
+            playerController.showNotification("Errore caricamento: " + e.getMessage());
+            System.err.println("Errore nel caricamento della partita: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public void applySaveData(GameSaveData data) {
+        if (data == null) return;
+
+        Player player = playerController.getPlayer();
+        PlayerSaveData psd = data.getPlayer();
+
+        if (psd != null) {
+            player.setHealth(psd.getHealth());
+            player.setMaxHealth(psd.getMaxHealth());
+            player.setDefense(psd.getDefense());
+            player.setMaxDefense(psd.getMaxDefense());
+            player.setDamage(psd.getDamage());
+            player.setSpeed(psd.getSpeed());
+            player.setLevel(psd.getLevel());
+            player.setXp(psd.getXp());
+            if (psd.getDirection() != null) {
+                player.setDirection(psd.getDirection());
+            } else {
+                player.setDirection(Direction.DOWN);
+            }
+            if (psd.getState() != null) {
+                player.setState(psd.getState());
+            } else {
+                player.setState(EntityState.IDLE);
+            }
+
+            if (player.getAnimationService() != null) {
+                player.getAnimationService().stopAll();
+            }
+
+            ImageView pView = player.getImageView();
+            if (pView != null) {
+                if (!mainPane.getChildren().contains(pView)) {
+                    mainPane.getChildren().add(pView);
+                }
+
+                pView.setLayoutX(psd.getX());
+                pView.setLayoutY(psd.getY());
+                pView.setTranslateX(0);
+                pView.setTranslateY(0);
+                pView.setOpacity(1.0);
+                pView.setEffect(null);
+
+                Image idleImage = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/player/walk_down/player_walk_down_01.png")));
+                pView.setImage(idleImage);
+                pView.setViewport(new Rectangle2D(10.0, 10.0, 30.0, 40.0));
+            }
+        }
+
+        // Rimuovi tutti i nemici correnti dalla scena
+        for (Enemy enemy : enemyMovementService.getEnemies()) {
+            if (enemy.getAnimationService() != null) {
+                enemy.getAnimationService().stopAll();
+            }
+            mainPane.getChildren().remove(enemy.getImageView());
+            mainPane.getChildren().remove(enemy.getShadow());
+        }
+        enemyMovementService.clearEnemies();
+
+        // Ricrea i nemici salvati
+        if (data.getEnemies() != null) {
+            for (EnemySaveData esd : data.getEnemies()) {
+                if (esd.getHealth() <= 0) continue;
+                Enemy enemy = createEnemyFromSaveData(esd);
+                if (enemy != null) {
+                    enemyMovementService.addEnemy(enemy);
+                    if (enemy.getShadow() != null) {
+                        mainPane.getChildren().add(enemy.getShadow());
+                    }
+                    mainPane.getChildren().add(enemy.getImageView());
+                }
+            }
+        }
+
+        playerController.hideDeathScreen();
+        playerController.updateHealthBar();
+        playerController.updateDefenseBar();
+        if (playerController.isPaused()) {
+            playerController.resumeGame();
+        }
+        gameLoop.start();
+    }
+
+    private Enemy createEnemyFromSaveData(EnemySaveData esd) {
+        if (esd.getType() == null) return null;
+
+        Enemy enemy = switch (esd.getType()) {
+            case SLIME -> new Slime();
+            case ZOMBIE -> new Zombie();
+            case SKELETON -> new Skeleton();
+        };
+
+        enemy.setHealth(esd.getHealth());
+        enemy.setMaxHealth(esd.getMaxHealth());
+        enemy.setDefense(esd.getDefense());
+        enemy.setMaxDefense(esd.getMaxDefense());
+        enemy.setDamage(esd.getDamage());
+        enemy.setSpeed(esd.getSpeed());
+        if (esd.getDirection() != null) {
+            enemy.setDirection(esd.getDirection());
+        }
+        if (esd.getState() != null) {
+            enemy.setState(esd.getState());
+        }
+
+        ImageView eView = enemy.getImageView();
+        if (eView != null) {
+            eView.setLayoutX(esd.getX());
+            eView.setLayoutY(esd.getY());
+            eView.setTranslateX(0);
+            eView.setTranslateY(0);
+            eView.setOpacity(1.0);
+            eView.setEffect(null);
+        }
+
+        return enemy;
+    }
+
+    public boolean isPaused() {
+        return isPaused;
+    }
+
+    public void setPaused(boolean paused) {
+        this.isPaused = paused;
     }
 }

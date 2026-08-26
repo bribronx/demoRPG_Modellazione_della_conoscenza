@@ -7,9 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Service managing enemy movement and updates across the game world.
- */
+
 public class EnemyMovementService {
 
     private final List<Enemy> enemies = new ArrayList<>();
@@ -39,6 +37,10 @@ public class EnemyMovementService {
 
     public void removeEnemy(Enemy enemy) {
         enemies.remove(enemy);
+    }
+
+    public void clearEnemies() {
+        enemies.clear();
     }
 
     public List<Enemy> getEnemies() {

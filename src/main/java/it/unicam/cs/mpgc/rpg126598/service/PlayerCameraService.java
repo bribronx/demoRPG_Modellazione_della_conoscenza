@@ -57,7 +57,7 @@ public class PlayerCameraService {
             double scaledMapWidth = mapWidth * zoom;
             if (scaledMapWidth >= sceneWidth) {
                 double minTranslateX = sceneWidth - scaledMapWidth;
-                translateX = Math.max(minTranslateX, Math.min(0, translateX));
+                translateX = Math.clamp(translateX, minTranslateX, 0);
             } else {
                 translateX = (sceneWidth - scaledMapWidth) / 2.0;
             }
@@ -67,7 +67,7 @@ public class PlayerCameraService {
             double scaledMapHeight = mapHeight * zoom;
             if (scaledMapHeight >= sceneHeight) {
                 double minTranslateY = sceneHeight - scaledMapHeight;
-                translateY = Math.max(minTranslateY, Math.min(0, translateY));
+                translateY = Math.clamp(translateY, minTranslateY, 0);
             } else {
                 translateY = (sceneHeight - scaledMapHeight) / 2.0;
             }
