@@ -42,7 +42,6 @@
     -fx-padding: 0;
 }
 
-
 .death-screen, .pause-menu {
     -fx-background-color: rgba(20, 20, 20, 0.85);
 }
@@ -56,6 +55,28 @@
     -fx-font-family: 'Book Antiqua';
     -fx-font-weight: bold;
     -fx-font-size: 32px;
+}
+
+.main-menu-pane {
+    -fx-background-color: #111111;
+}
+
+.main-menu-card {
+    -fx-background-color: rgba(20, 20, 20, 0.75);
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-border-color: rgba(93, 109, 126, 0.6);
+    -fx-border-width: 2px;
+    -fx-padding: 30px 40px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 15, 0.5, 0, 4);
+}
+
+.main-menu-pane .title-label {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-family: 'Book Antiqua';
+    -fx-font-weight: bold;
+    -fx-font-size: 36px;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.9), 10, 0.6, 2, 2);
 }
 
 .menu-button {
@@ -91,6 +112,3 @@
     -fx-padding: 6px 14px;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.6), 8, 0.5, 2, 2);
 }
-
-
-

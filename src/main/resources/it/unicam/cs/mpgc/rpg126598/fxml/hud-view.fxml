@@ -52,6 +52,7 @@
             <Button mnemonicParsing="false" onAction="#handleResumeGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Riprendi Partita (ESC)" />
             <Button mnemonicParsing="false" onAction="#handleQuickSave" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Salva Partita (F5)" />
             <Button mnemonicParsing="false" onAction="#handleQuickLoad" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Carica Partita (F9)" />
+            <Button mnemonicParsing="false" onAction="#handleMainMenu" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Menu Principale" />
             <Button mnemonicParsing="false" onAction="#handleExitGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Esci dal Gioco" />
          </children>
       </VBox>
@@ -63,6 +64,7 @@
                </font>
             </Label>
             <Button fx:id="loadButton" mnemonicParsing="false" onAction="#handleLoadGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Carica Partita" />
+            <Button mnemonicParsing="false" onAction="#handleMainMenu" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Menu Principale" />
             <Button mnemonicParsing="false" onAction="#handleExitGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Esci dal Gioco" />
          </children>
       </VBox>

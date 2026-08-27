@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.effect.GaussianBlur?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<StackPane fx:id="rootPane" prefHeight="576.0" prefWidth="768.0" styleClass="main-menu-pane" stylesheets="@../style.css" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="it.unicam.cs.mpgc.rpg126598.controller.MainMenuController">
+   <ImageView fx:id="backgroundImageView" opacity="0.75" pickOnBounds="true">
+      <effect>
+         <GaussianBlur radius="14.0" />
+      </effect>
+      <Image url="@/backgroundgrass.jpg" />
+   </ImageView>
+   <Pane mouseTransparent="true" style="-fx-background-color: rgba(0, 0, 0, 0.2);" />
+   <HBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" prefHeight="337.0" prefWidth="603.0" spacing="50.0" styleClass="main-menu-card">
+      <VBox fx:id="pauseMenu" alignment="CENTER" spacing="20.0">
+         <children>
+            <Label alignment="CENTER" prefWidth="339.0" styleClass="title-label" text="TINY ADVENTURE" textAlignment="CENTER">
+               <font>
+                  <Font name="Book Antiqua Bold" size="36.0" />
+               </font>
+               <padding>
+                  <Insets bottom="20.0" />
+               </padding>
+            </Label>
+            <Button mnemonicParsing="false" onAction="#handleNewGame" prefHeight="36.0" prefWidth="270.0" styleClass="menu-button" text="Nuova Partita" />
+            <Button mnemonicParsing="false" onAction="#handleQuickLoad" prefHeight="36.0" prefWidth="270.0" styleClass="menu-button" text="Continua Partita" />
+            <Button mnemonicParsing="false" onAction="#handleExitGame" prefHeight="36.0" prefWidth="270.0" styleClass="menu-button" text="Esci dal Gioco" />
+         </children>
+      </VBox>
+      <ImageView fx:id="menup" fitHeight="150.0" fitWidth="120.0" pickOnBounds="true" preserveRatio="true">
+         <Image url="@../player/walk_down/player_walk_down_01.png" />
+      </ImageView>
+   </HBox>
+</StackPane>

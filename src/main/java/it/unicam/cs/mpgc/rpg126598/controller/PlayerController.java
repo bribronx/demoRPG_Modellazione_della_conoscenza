@@ -10,7 +10,11 @@ import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -21,6 +25,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -227,6 +232,38 @@ public class PlayerController {
             if (loaded) {
                 resumeGame();
             }
+        }
+    }
+
+    @FXML
+    public void handleMainMenu(ActionEvent event) {
+        if (gameController != null) {
+            gameController.stopGameLoop();
+        }
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/it/unicam/cs/mpgc/rpg126598/fxml/main-menu.fxml"));
+            Parent root = loader.load();
+
+            Stage stage = null;
+            if (event != null && event.getSource() instanceof Node node && node.getScene() != null) {
+                stage = (Stage) node.getScene().getWindow();
+            } else if (hudPane != null && hudPane.getScene() != null) {
+                stage = (Stage) hudPane.getScene().getWindow();
+            }
+
+            if (stage != null) {
+                Scene scene = stage.getScene();
+                if (scene == null) {
+                    scene = new Scene(root);
+                    stage.setScene(scene);
+                } else {
+                    scene.setRoot(root);
+                }
+            }
+            root.requestFocus();
+        } catch (IOException e) {
+            System.err.println("Errore durante il ritorno al menu principale: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

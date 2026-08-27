@@ -314,6 +314,20 @@ public class GameController {
         return enemy;
     }
 
+    public void stopGameLoop() {
+        if (gameLoop != null) {
+            gameLoop.stop();
+        }
+        for (Enemy enemy : enemyMovementService.getEnemies()) {
+            if (enemy.getAnimationService() != null) {
+                enemy.getAnimationService().stopAll();
+            }
+        }
+        if (playerController != null && playerController.getPlayer() != null && playerController.getPlayer().getAnimationService() != null) {
+            playerController.getPlayer().getAnimationService().stopAll();
+        }
+    }
+
     public boolean isPaused() {
         return isPaused;
     }
