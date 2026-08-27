@@ -18,6 +18,8 @@ public class Zombie extends Enemy {
         this.setBoundBox(4, 4, 12, 12);
         this.setHealth(100);
         this.setDamage(5);
+        this.setLevel(1);
+        this.setXp(40);
         this.setAggroRange(60);
         this.setImageView(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/zombie/idle/zombie_idle_01.png")))));
         this.getImageView().setFitHeight(14.0);

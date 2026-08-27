@@ -16,6 +16,7 @@ import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.JsonSaveLoadService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
+import it.unicam.cs.mpgc.rpg126598.service.XpService;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
@@ -45,6 +46,7 @@ public class GameController {
     private final EnemyMovementService enemyMovementService = new EnemyMovementService(mapBuilderService);
     private final CombatService combatService = new CombatService(new CollisionService());
     private final JsonSaveLoadService saveLoadService = new JsonSaveLoadService();
+    private XpService xpService;
 
     private final String currentMapPath = "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt";
     private final File defaultSaveFile = new File("saves/savegame.json");
@@ -65,6 +67,9 @@ public class GameController {
         playerController.setCombatService(combatService);
         playerController.setEnemyMovementService(enemyMovementService);
 
+        xpService = new XpService(playerController.getPlayer());
+        playerController.setXpService(xpService);
+
         combatService.setCombatListener(new CombatService.CombatListener() {
             @Override
             public void onDamageDealt(Entity attacker, Entity target, double damage) {
@@ -83,6 +88,9 @@ public class GameController {
                         mainPane.getChildren().remove(enemy.getImageView());
                         mainPane.getChildren().remove(enemy.getShadow());
                     });
+                    if (xpService != null) {
+                        xpService.onEnemyDefeated(enemy);
+                    }
                 } else if (deadEntity instanceof Player) {
                     System.out.println("GAME OVER!");
                     playerController.updateHealthBar();
@@ -148,6 +156,13 @@ public class GameController {
         enemyMovementService.addEnemy(zombie1);
         enemyMovementService.addEnemy(skeleton1);
         enemyMovementService.addEnemy(skeleton2);
+        if (xpService != null) {
+            xpService.addEnemy(slime1);
+            xpService.addEnemy(slime2);
+            xpService.addEnemy(zombie1);
+            xpService.addEnemy(skeleton1);
+            xpService.addEnemy(skeleton2);
+        }
     }
 
     public void saveDefaultGame() {
@@ -173,7 +188,6 @@ public class GameController {
             GameSaveData saveData = saveLoadService.createSaveData(player, enemyMovementService.getEnemies(), currentMapPath);
             saveLoadService.saveGame(saveData, file);
             playerController.showNotification("Partita salvata: " + formatSaveFileName(file));
-            System.out.println("Partita salvata con successo in: " + file.getAbsolutePath());
         } catch (Exception e) {
             playerController.showNotification("Errore nel salvataggio: " + e.getMessage());
             System.err.println("Errore nel salvataggio: " + e.getMessage());
@@ -254,6 +268,9 @@ public class GameController {
             mainPane.getChildren().remove(enemy.getShadow());
         }
         enemyMovementService.clearEnemies();
+        if (xpService != null) {
+            xpService.clearEnemies();
+        }
 
         // Ricrea i nemici salvati
         if (data.getEnemies() != null) {
@@ -262,6 +279,9 @@ public class GameController {
                 Enemy enemy = createEnemyFromSaveData(esd);
                 if (enemy != null) {
                     enemyMovementService.addEnemy(enemy);
+                    if (xpService != null) {
+                        xpService.addEnemy(enemy);
+                    }
                     if (enemy.getShadow() != null) {
                         mainPane.getChildren().add(enemy.getShadow());
                     }
@@ -334,5 +354,9 @@ public class GameController {
 
     public void setPaused(boolean paused) {
         this.isPaused = paused;
+    }
+
+    public XpService getXpService() {
+        return xpService;
     }
 }

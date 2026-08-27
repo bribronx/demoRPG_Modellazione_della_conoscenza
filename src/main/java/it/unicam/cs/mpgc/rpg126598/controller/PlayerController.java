@@ -6,6 +6,7 @@ import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerCameraService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerMovementService;
+import it.unicam.cs.mpgc.rpg126598.service.XpService;
 import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import javafx.animation.FadeTransition;
@@ -20,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -44,6 +46,21 @@ public class PlayerController {
     private ProgressBar defenseBar;
 
     @FXML
+    private ProgressBar xpBar;
+
+    @FXML
+    private Label xpTextLabel;
+
+    @FXML
+    private Label levelLabel;
+
+    @FXML
+    private VBox levelUpCard;
+
+    @FXML
+    private Label levelUpText;
+
+    @FXML
     private VBox deathScreen;
 
     @FXML
@@ -62,9 +79,11 @@ public class PlayerController {
     private CombatService combatService;
     private EnemyMovementService enemyMovementService;
     private GameController gameController;
+    private XpService xpService;
 
     private PauseTransition notificationTimer;
     private boolean isPaused = false;
+    private int pendingLevelUps = 0;
 
     private static final double HP_SCALE = 2.0;
 
@@ -83,6 +102,7 @@ public class PlayerController {
             defenseBar.setPrefWidth(player.getMaxDefense() * HP_SCALE);
             defenseBar.setProgress(player.getMaxDefense() > 0 ? player.getDefense() / player.getMaxDefense() : 0);
         }
+        updateXpBar();
     }
 
     public void initServices(ImageView playerImageView, MapBuilderService mapBuilderService, Pane mainPane,
@@ -99,6 +119,7 @@ public class PlayerController {
             this.defenseBar.setPrefWidth(player.getMaxDefense() * HP_SCALE);
             this.defenseBar.setProgress(player.getMaxDefense() > 0 ? player.getDefense() / player.getMaxDefense() : 0);
         }
+        updateXpBar();
 
         this.cameraService.updateCamera();
     }
@@ -119,12 +140,125 @@ public class PlayerController {
         return gameController;
     }
 
+    public void setXpService(XpService xpService) {
+        this.xpService = xpService;
+        if (this.xpService != null) {
+            this.xpService.setListener(new XpService.XpListener() {
+                @Override
+                public void onXpGained(double amount, double currentXp, double requiredXp) {
+                    updateXpBar();
+                }
+
+                @Override
+                public void onLevelUp(int newLevel, Player player) {
+                    updateHealthBar();
+                    updateDefenseBar();
+                    updateXpBar();
+                    showLevelUpCard(newLevel);
+                }
+            });
+        }
+        updateXpBar();
+    }
+
+    public XpService getXpService() {
+        return xpService;
+    }
+
+    public void showLevelUpCard(int newLevel) {
+        pendingLevelUps++;
+        if (levelUpText != null) {
+            levelUpText.setText("Hai raggiunto il Livello " + (int) player.getLevel() + "!");
+        }
+        if (levelUpCard != null && !levelUpCard.isVisible()) {
+            isPaused = true;
+            pressedKeys.clear();
+            if (gameController != null) {
+                gameController.setPaused(true);
+            }
+
+            levelUpCard.setOpacity(0.0);
+            levelUpCard.setVisible(true);
+            levelUpCard.toFront();
+
+            FadeTransition fadeIn = new FadeTransition(Duration.millis(300), levelUpCard);
+            fadeIn.setFromValue(0.0);
+            fadeIn.setToValue(1.0);
+            fadeIn.play();
+        }
+    }
+
+    private void onStatSelected() {
+        pendingLevelUps--;
+        updateHealthBar();
+        updateDefenseBar();
+        updateXpBar();
+
+        if (pendingLevelUps > 0) {
+            if (levelUpText != null) {
+                levelUpText.setText("Hai raggiunto il Livello " + (int) player.getLevel() + "!");
+            }
+        } else {
+            pendingLevelUps = 0;
+            handleCloseLevelUp();
+        }
+    }
+
+    @FXML
+    public void handleUpgradeHealth() {
+        player.setMaxHealth(player.getMaxHealth() + 15.0);
+        player.setHealth(player.getMaxHealth());
+        onStatSelected();
+    }
+
+    @FXML
+    public void handleUpgradeDefense() {
+        player.setMaxDefense(player.getMaxDefense() + 5.0);
+        player.setDefense(player.getMaxDefense());
+        onStatSelected();
+    }
+
+    @FXML
+    public void handleUpgradeDamage() {
+        player.setDamage(player.getDamage() + 6.0);
+        onStatSelected();
+    }
+
+    public void handleCloseLevelUp() {
+        if (levelUpCard != null && levelUpCard.isVisible()) {
+            FadeTransition fadeOut = new FadeTransition(Duration.millis(250), levelUpCard);
+            fadeOut.setFromValue(levelUpCard.getOpacity());
+            fadeOut.setToValue(0.0);
+            fadeOut.setOnFinished(e -> {
+                levelUpCard.setVisible(false);
+                if (pauseMenu == null || !pauseMenu.isVisible()) {
+                    isPaused = false;
+                    pressedKeys.clear();
+                    if (gameController != null) {
+                        gameController.setPaused(false);
+                    }
+                }
+            });
+            fadeOut.play();
+        }
+    }
+
     public void setupKeyListeners(Scene scene) {
         if (scene == null)
             return;
 
+        scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (isPaused && (event.getCode() == KeyCode.SPACE || event.getCode() == KeyCode.ENTER)) {
+                event.consume();
+            }
+        });
+
         scene.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.ESCAPE) {
+                if (levelUpCard != null && levelUpCard.isVisible()) {
+                    event.consume();
+                    return;
+                }
                 togglePauseMenu();
                 event.consume();
                 return;
@@ -137,7 +271,6 @@ public class PlayerController {
             }
 
             if (isPaused) {
-                // Scorciatoie rapide
                 if (event.getCode() == KeyCode.F5) {
                     handleQuickSave();
                 } else if (event.getCode() == KeyCode.F9) {
@@ -317,6 +450,7 @@ public class PlayerController {
         }
         updateHealthBar();
         updateDefenseBar();
+        updateXpBar();
     }
 
     public void updateHealthBar() {
@@ -340,6 +474,25 @@ public class PlayerController {
             defenseBar.setProgress(progress);
         } else {
             defenseBar.setProgress(0);
+        }
+    }
+
+    public void updateXpBar() {
+        if (xpBar == null) return;
+
+        double currentXp = player.getXp();
+        double requiredXp = xpService != null ? xpService.getXpRequiredForNextLevel() : 50.0;
+        int currentLevel = (int) Math.max(1, player.getLevel());
+
+        double progress = requiredXp > 0 ? Math.clamp(currentXp / requiredXp, 0.0, 1.0) : 0.0;
+        xpBar.setProgress(progress);
+
+        if (xpTextLabel != null) {
+            xpTextLabel.setText(String.format("%.0f / %.0f XP", currentXp, requiredXp));
+        }
+
+        if (levelLabel != null) {
+            levelLabel.setText("Livello " + currentLevel);
         }
     }
 

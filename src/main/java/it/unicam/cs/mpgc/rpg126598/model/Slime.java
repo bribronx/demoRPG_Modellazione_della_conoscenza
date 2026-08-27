@@ -18,6 +18,8 @@ public class Slime extends Enemy {
         this.setHealth(10);
         this.setMaxHealth(10);
         this.setDamage(2);
+        this.setLevel(1);
+        this.setXp(25);
         this.setAggroRange(60.0);
         this.setImageView(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/slime/idle/slime_idle_01.png")))));
         this.getImageView().setFitHeight(12.0);

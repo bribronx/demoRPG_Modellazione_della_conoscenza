@@ -16,7 +16,7 @@
    <children>
       <Pane fx:id="hudPane" pickOnBounds="false" prefHeight="576.0" prefWidth="768.0">
           <children>
-              <VBox fx:id="stats" layoutX="20.0" layoutY="20.0" spacing="6.0">
+              <VBox fx:id="stats" layoutX="20.0" layoutY="20.0" prefHeight="38.0" prefWidth="322.0" spacing="6.0">
                   <children>
                   <HBox alignment="CENTER_LEFT" prefHeight="0.0" prefWidth="200.0" spacing="4.0">
                      <children>
@@ -40,6 +40,7 @@
                   </HBox>
                   </children>
               </VBox>
+              <Label fx:id="notificationLabel" layoutX="20.0" layoutY="75.0" styleClass="toast-notification" visible="false" />
           </children>
       </Pane>
       <VBox fx:id="pauseMenu" alignment="CENTER" prefHeight="200.0" prefWidth="100.0" spacing="12.0" styleClass="pause-menu" visible="false">
@@ -63,15 +64,43 @@
                   <Font name="Book Antiqua Bold" size="38.0" />
                </font>
             </Label>
-            <Button fx:id="loadButton" mnemonicParsing="false" onAction="#handleLoadGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Carica Partita" />
+            <Button fx:id="loadButton" mnemonicParsing="false" onAction="#handleLoadGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Carica Ultimo Salvataggio" />
             <Button mnemonicParsing="false" onAction="#handleMainMenu" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Menu Principale" />
             <Button mnemonicParsing="false" onAction="#handleExitGame" prefHeight="32.0" prefWidth="270.0" styleClass="menu-button" text="Esci dal Gioco" />
          </children>
       </VBox>
-      <Label fx:id="notificationLabel" alignment="CENTER" mouseTransparent="true" styleClass="toast-notification" visible="false" StackPane.alignment="BOTTOM_CENTER">
-         <StackPane.margin>
-            <Insets bottom="30.0" />
-         </StackPane.margin>
-      </Label>
+      <VBox fx:id="levelUpCard" alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" spacing="10.0" styleClass="levelup-card" visible="false" StackPane.alignment="CENTER">
+         <children>
+            <Label alignment="CENTER" styleClass="levelup-title" text="★ LEVEL UP! ★" textAlignment="CENTER" />
+            <Label fx:id="levelUpText" alignment="CENTER" styleClass="levelup-subtitle" text="Hai raggiunto il Livello 2!" textAlignment="CENTER" />
+            <Label styleClass="levelup-instruction" text="Scegli una statistica da potenziare:" textAlignment="CENTER" />
+            <VBox alignment="CENTER" spacing="8.0" styleClass="levelup-choices-box">
+               <children>
+                  <Button mnemonicParsing="false" onAction="#handleUpgradeHealth" prefHeight="32.0" prefWidth="250.0" styleClass="levelup-choice-button" text="❤  +30 Salute Massima" />
+                  <Button mnemonicParsing="false" onAction="#handleUpgradeDefense" prefHeight="32.0" prefWidth="250.0" styleClass="levelup-choice-button" text="🛡  +15 Difesa Massima" />
+                  <Button mnemonicParsing="false" onAction="#handleUpgradeDamage" prefHeight="32.0" prefWidth="250.0" styleClass="levelup-choice-button" text="⚔  +6 Danno di Attacco" />
+               </children>
+            </VBox>
+         </children>
+      </VBox>
+      <VBox alignment="BOTTOM_CENTER" pickOnBounds="false" spacing="4.0">
+         <children>
+            <Label fx:id="levelLabel" styleClass="level-label" text="Livello 1" />
+            <HBox alignment="CENTER" pickOnBounds="false" spacing="6.0">
+               <children>
+                  <Label styleClass="xp-title-label" text="XP" />
+                  <StackPane alignment="CENTER">
+                     <children>
+                        <ProgressBar prefHeight="18.0" prefWidth="250.0" progress="0.0" styleClass="xp-bar" fx:id="xpBar" />
+                        <Label mouseTransparent="true" styleClass="xp-text" text="0 / 50 XP" fx:id="xpTextLabel" />
+                     </children>
+                  </StackPane>
+               </children>
+            </HBox>
+         </children>
+         <padding>
+            <Insets bottom="16.0" />
+         </padding>
+      </VBox>
    </children>
 </StackPane>

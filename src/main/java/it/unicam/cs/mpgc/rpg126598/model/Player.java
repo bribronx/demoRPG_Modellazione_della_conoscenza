@@ -15,6 +15,8 @@ public class Player extends Entity {
         this.setDefense(50);
         this.setMaxDefense(50);
         this.setDamage(20);
+        this.setLevel(1);
+        this.setXp(0);
     }
 
 }

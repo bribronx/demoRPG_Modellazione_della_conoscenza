@@ -18,6 +18,8 @@ public class Skeleton extends Enemy{
         this.setHealth(50);
         this.setMaxHealth(50);
         this.setDamage(10);
+        this.setLevel(1);
+        this.setXp(60);
         this.setAggroRange(120);
         this.setAttackRange(50.0);
         this.setImageView(new ImageView(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/skeleton/idle/skeleton_idle_01.png")))));
