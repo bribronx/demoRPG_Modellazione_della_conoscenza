@@ -18,6 +18,8 @@ public class MapBuilderService {
     private Image wall;
     private Image water;
     private Image earth;
+    private Image floor;
+    private Image road;
     private int[][] collisionMap;
     private final int TILE_SIZE = 16;
 
@@ -32,6 +34,8 @@ public class MapBuilderService {
         tree = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/tiles/tree.png")));
         wall = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/tiles/wall.png")));
         water = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/tiles/water.png")));
+        floor = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/tiles/floor.png")));
+        road = new Image(Objects.requireNonNull(getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/tiles/road.png")));
     }
 
     public void generateMap(Canvas canvas, String mapName){
@@ -85,9 +89,11 @@ public class MapBuilderService {
             case 0: return grass;
             case 1: return earth;
             case 2: return sand;
-            case 3: return tree;
-            case 4: return wall;
-            case 5: return water;
+            case 3: return floor;
+            case 4: return road;
+            case 5: return tree;
+            case 6: return wall;
+            case 7: return water;
             default: return grass;
         }
     }

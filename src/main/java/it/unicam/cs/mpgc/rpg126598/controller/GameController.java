@@ -10,10 +10,12 @@ import it.unicam.cs.mpgc.rpg126598.model.save.EnemySaveData;
 import it.unicam.cs.mpgc.rpg126598.model.save.GameSaveData;
 import it.unicam.cs.mpgc.rpg126598.model.save.PlayerSaveData;
 import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
+import it.unicam.cs.mpgc.rpg126598.model.enums.EnemyType;
 import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
 import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
+import it.unicam.cs.mpgc.rpg126598.service.ItemService;
 import it.unicam.cs.mpgc.rpg126598.service.JsonSaveLoadService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.service.XpService;
@@ -42,9 +44,12 @@ public class GameController {
     @FXML
     private PlayerController playerController;
 
+    private static final int TILE_SIZE = 16;
+
     private final MapBuilderService mapBuilderService = new MapBuilderService();
     private final EnemyMovementService enemyMovementService = new EnemyMovementService(mapBuilderService);
     private final CombatService combatService = new CombatService(new CollisionService());
+    private final ItemService itemService = new ItemService();
     private final JsonSaveLoadService saveLoadService = new JsonSaveLoadService();
     private XpService xpService;
 
@@ -59,6 +64,7 @@ public class GameController {
         enemyMovementService.setCombatService(combatService);
         combatService.setParentPane(mainPane);
         combatService.setMapBuilderService(mapBuilderService);
+        itemService.setParentPane(mainPane);
 
         mapBuilderService.generateMap(map, currentMapPath);
 
@@ -121,48 +127,72 @@ public class GameController {
                     playerController.update();
                     enemyMovementService.updateEnemies(p, now);
                     combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
+                    itemService.update(p, playerController);
                 }
             }
         };
         gameLoop.start();
 
         spawnInitialEnemies();
+        spawnInitialItems();
+
+        map.setOnMouseClicked(event -> {
+            int tileX = (int) (event.getX() / TILE_SIZE); // Colonna matrice (X)
+            int tileY = (int) (event.getY() / TILE_SIZE); // Riga matrice (Y)
+
+            System.out.println("Casella cliccata: TileX=" + tileX + ", TileY=" + tileY +
+                    " (Pixel: X=" + (int) event.getX() + ", Y=" + (int) event.getY() + ")");
+        });
+    }
+
+
+    public void spawnEnemyAtTile(EnemyType type, int tileX, int tileY) {
+        if (type == null) return;
+        Enemy enemy = switch (type) {
+            case SLIME -> new Slime();
+            case ZOMBIE -> new Zombie();
+            case SKELETON -> new Skeleton();
+        };
+        spawnEnemyAtTile(enemy, tileX, tileY);
+    }
+
+
+    public void spawnEnemyAtTile(Enemy enemy, int tileX, int tileY) {
+        if (enemy == null) return;
+
+        double pixelX = tileX * TILE_SIZE;
+        double pixelY = tileY * TILE_SIZE;
+
+        if (enemy.getImageView() != null) {
+            enemy.getImageView().setLayoutX(pixelX);
+            enemy.getImageView().setLayoutY(pixelY);
+        }
+
+        if (enemy.getShadow() != null && !mainPane.getChildren().contains(enemy.getShadow())) {
+            mainPane.getChildren().add(enemy.getShadow());
+        }
+        if (enemy.getImageView() != null && !mainPane.getChildren().contains(enemy.getImageView())) {
+            mainPane.getChildren().add(enemy.getImageView());
+        }
+
+        enemyMovementService.addEnemy(enemy);
+        if (xpService != null) {
+            xpService.addEnemy(enemy);
+        }
     }
 
     private void spawnInitialEnemies() {
-        Slime slime1 = new Slime();
-        Slime slime2 = new Slime();
-        Zombie zombie1 = new Zombie();
-        Skeleton skeleton1 = new Skeleton();
-        Skeleton skeleton2 = new Skeleton();
-        skeleton2.getImageView().setLayoutX(300);
-        skeleton2.getImageView().setLayoutY(150);
-        skeleton1.getImageView().setLayoutX(100);
-        skeleton1.getImageView().setLayoutY(150);
-        slime1.getImageView().setLayoutX(100);
-        slime1.getImageView().setLayoutY(100);
-        slime2.getImageView().setLayoutX(120);
-        slime2.getImageView().setLayoutY(100);
-        zombie1.getImageView().setLayoutX(120);
-        zombie1.getImageView().setLayoutY(50);
-        mainPane.getChildren().addAll(
-                slime1.getShadow(), slime1.getImageView(),
-                slime2.getShadow(), slime2.getImageView(),
-                zombie1.getShadow(), zombie1.getImageView(),
-                skeleton1.getShadow(), skeleton1.getImageView(),
-                skeleton2.getShadow(), skeleton2.getImageView());
-        enemyMovementService.addEnemy(slime1);
-        enemyMovementService.addEnemy(slime2);
-        enemyMovementService.addEnemy(zombie1);
-        enemyMovementService.addEnemy(skeleton1);
-        enemyMovementService.addEnemy(skeleton2);
-        if (xpService != null) {
-            xpService.addEnemy(slime1);
-            xpService.addEnemy(slime2);
-            xpService.addEnemy(zombie1);
-            xpService.addEnemy(skeleton1);
-            xpService.addEnemy(skeleton2);
-        }
+        spawnEnemyAtTile(EnemyType.SLIME, 11, 4);
+        spawnEnemyAtTile(EnemyType.SLIME, 6, 7);
+        spawnEnemyAtTile(EnemyType.ZOMBIE, 47, 4);
+        spawnEnemyAtTile(EnemyType.SKELETON, 45, 22);  
+        spawnEnemyAtTile(EnemyType.SKELETON, 46, 25);  
+    }
+
+    private void spawnInitialItems() {
+        itemService.spawnShieldItemAtTile(53, 5, 20.0);
+        itemService.spawnShieldItemAtTile(41, 19, 20.0);
+        itemService.spawnShieldItemAtTile(21, 4, 20.0);
     }
 
     public void saveDefaultGame() {
@@ -290,6 +320,9 @@ public class GameController {
             }
         }
 
+        itemService.clear();
+        spawnInitialItems();
+
         playerController.hideDeathScreen();
         playerController.updateHealthBar();
         playerController.updateDefenseBar();
@@ -358,5 +391,9 @@ public class GameController {
 
     public XpService getXpService() {
         return xpService;
+    }
+
+    public ItemService getItemService() {
+        return itemService;
     }
 }

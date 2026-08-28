@@ -43,7 +43,7 @@ public class CollisionService {
 
         for (int row = minRow; row <= maxRow; row++) {
             for (int col = minCol; col <= maxCol; col++) {
-                if (collisionMap[row][col] >= 3) {
+                if (collisionMap[row][col] >= 5) {
                     Bounds tileBounds = new BoundingBox(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     if (hitbox.intersects(tileBounds)) {
                         return true;

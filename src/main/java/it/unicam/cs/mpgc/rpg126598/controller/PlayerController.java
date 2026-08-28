@@ -109,7 +109,7 @@ public class PlayerController {
             double mapWidth, double mapHeight) {
         this.player.setImageView(playerImageView);
         this.movementService = new PlayerMovementService(this.player, mapBuilderService);
-        this.cameraService = new PlayerCameraService(this.player, mainPane, 4, mapWidth, mapHeight);
+        this.cameraService = new PlayerCameraService(this.player, mainPane, 6, mapWidth, mapHeight);
 
         if (this.hpBar != null) {
             this.hpBar.setPrefWidth(player.getMaxHealth() * HP_SCALE);
