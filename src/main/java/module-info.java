@@ -11,6 +11,7 @@ module it.unicam.cs.mpgc.rpg126598 {
     opens it.unicam.cs.mpgc.rpg126598.model.save to com.google.gson;
     opens it.unicam.cs.mpgc.rpg126598.strategy to javafx.fxml;
     opens it.unicam.cs.mpgc.rpg126598.service to javafx.fxml, com.google.gson;
+    opens it.unicam.cs.mpgc.rpg126598.view to javafx.fxml;
 
     exports it.unicam.cs.mpgc.rpg126598;
     exports it.unicam.cs.mpgc.rpg126598.model;
@@ -18,4 +19,5 @@ module it.unicam.cs.mpgc.rpg126598 {
     exports it.unicam.cs.mpgc.rpg126598.model.save;
     exports it.unicam.cs.mpgc.rpg126598.service;
     exports it.unicam.cs.mpgc.rpg126598.strategy;
+    exports it.unicam.cs.mpgc.rpg126598.view;
 }

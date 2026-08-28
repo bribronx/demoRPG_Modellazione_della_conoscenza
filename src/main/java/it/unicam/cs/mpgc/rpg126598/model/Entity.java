@@ -1,22 +1,18 @@
 package it.unicam.cs.mpgc.rpg126598.model;
 
-import javafx.geometry.Bounds;
-import javafx.geometry.BoundingBox;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.paint.Color;
-import javafx.scene.effect.Blend;
-import javafx.scene.effect.BlendMode;
-import javafx.scene.effect.ColorInput;
-import javafx.scene.effect.Effect;
-import javafx.animation.PauseTransition;
-import javafx.util.Duration;
 import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
-import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 
 public abstract class Entity implements Targetable {
+    private double x;
+    private double y;
+    private double width = 16.0;
+    private double height = 16.0;
+    private double hitboxOffsetX = 0.0;
+    private double hitboxOffsetY = 0.0;
+    private double hitboxWidth = 16.0;
+    private double hitboxHeight = 16.0;
+
     private double speed;
     private double health;
     private double maxHealth;
@@ -25,12 +21,8 @@ public abstract class Entity implements Targetable {
     private double damage;
     private double level;
     private double xp;
-    private ImageView imageView;
-    private Rectangle boundBox;
-    private Ellipse shadow;
     private EntityState state = EntityState.IDLE;
     private Direction direction = Direction.DOWN;
-    private AnimationService animationService;
     private long lastAttackTime;
 
     public long getLastAttackTime() {
@@ -41,13 +33,6 @@ public abstract class Entity implements Targetable {
         this.lastAttackTime = lastAttackTime;
     }
 
-    public AnimationService getAnimationService() {
-        if (animationService == null) {
-            animationService = new AnimationService();
-        }
-        return animationService;
-    }
-
     public Direction getDirection() {
         return direction;
     }
@@ -56,36 +41,95 @@ public abstract class Entity implements Targetable {
         this.direction = direction;
     }
 
-    public Rectangle getBoundBox() {
-        return boundBox;
+    public double getX() {
+        return x;
     }
 
-    public void setBoundBox(double x, double y, double width, double height) {
-        this.boundBox = new Rectangle(x, y, width, height);
+    public void setX(double x) {
+        this.x = x;
     }
 
-    public ImageView getImageView() {
-        return imageView;
+    public double getY() {
+        return y;
     }
 
-    public void setImageView(ImageView imageView) {
-        this.imageView = imageView;
+    public void setY(double y) {
+        this.y = y;
     }
 
-    public Ellipse getShadow() {
-        if (shadow == null && imageView != null) {
-            shadow = new Ellipse();
-            shadow.radiusXProperty().bind(imageView.fitWidthProperty().divide(2.5));
-            shadow.radiusYProperty().bind(imageView.fitWidthProperty().divide(6.0));
-            shadow.setFill(Color.color(0, 0, 0, 0.1));
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 
-            shadow.layoutXProperty().bind(imageView.layoutXProperty().add(imageView.fitWidthProperty().divide(2)));
-            shadow.layoutYProperty().bind(imageView.layoutYProperty().add(imageView.fitHeightProperty().subtract(1)));
+    public double getGlobalX() {
+        return x;
+    }
 
-            shadow.translateXProperty().bind(imageView.translateXProperty());
-            shadow.translateYProperty().bind(imageView.translateYProperty());
-        }
-        return shadow;
+    public double getGlobalY() {
+        return y;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public void setHeight(double height) {
+        this.height = height;
+    }
+
+    public void setBoundBox(double offsetX, double offsetY, double width, double height) {
+        this.hitboxOffsetX = offsetX;
+        this.hitboxOffsetY = offsetY;
+        this.hitboxWidth = width;
+        this.hitboxHeight = height;
+    }
+
+    public double getHitboxOffsetX() {
+        return hitboxOffsetX;
+    }
+
+    public double getHitboxOffsetY() {
+        return hitboxOffsetY;
+    }
+
+    public double getHitboxWidth() {
+        return hitboxWidth;
+    }
+
+    public double getHitboxHeight() {
+        return hitboxHeight;
+    }
+
+    public Hitbox getHitboxAt(double deltaX, double deltaY) {
+        double hitboxX = this.x + this.hitboxOffsetX + deltaX;
+        double hitboxY = this.y + this.hitboxOffsetY + deltaY;
+        return new Hitbox(hitboxX, hitboxY, this.hitboxWidth, this.hitboxHeight);
+    }
+
+    public Hitbox getHitbox() {
+        return getHitboxAt(0, 0);
+    }
+
+    public void moveX(double deltaX) {
+        this.x += deltaX;
+    }
+
+    public void moveY(double deltaY) {
+        this.y += deltaY;
+    }
+
+    public void move(double deltaX, double deltaY) {
+        this.x += deltaX;
+        this.y += deltaY;
     }
 
     public double getXp() {
@@ -152,48 +196,6 @@ public abstract class Entity implements Targetable {
         this.speed = speed;
     }
 
-    public double getGlobalX() {
-        if (imageView == null)
-            return 0;
-        return imageView.getLayoutX() + imageView.getTranslateX();
-    }
-
-    public double getGlobalY() {
-        if (imageView == null)
-            return 0;
-        return imageView.getLayoutY() + imageView.getTranslateY();
-    }
-
-    public Bounds getHitboxAt(double deltaX, double deltaY) {
-        if (boundBox == null || imageView == null) {
-            return new BoundingBox(0, 0, 0, 0);
-        }
-        double hitboxX = getGlobalX() + boundBox.getX() + deltaX;
-        double hitboxY = getGlobalY() + boundBox.getY() + deltaY;
-        return new BoundingBox(hitboxX, hitboxY, boundBox.getWidth(), boundBox.getHeight());
-    }
-
-    public Bounds getHitbox() {
-        return getHitboxAt(0, 0);
-    }
-
-    public void moveX(double deltaX) {
-        if (imageView != null) {
-            imageView.setTranslateX(imageView.getTranslateX() + deltaX);
-        }
-    }
-
-    public void moveY(double deltaY) {
-        if (imageView != null) {
-            imageView.setTranslateY(imageView.getTranslateY() + deltaY);
-        }
-    }
-
-    public void move(double deltaX, double deltaY) {
-        moveX(deltaX);
-        moveY(deltaY);
-    }
-
     public EntityState getState() {
         return state;
     }
@@ -201,9 +203,6 @@ public abstract class Entity implements Targetable {
     public void setState(EntityState state) {
         this.state = state;
     }
-
-    private transient Effect originalEffect;
-    private transient PauseTransition hitEffectTimer;
 
     @Override
     public void takeDamage(double amount) {
@@ -217,39 +216,8 @@ public abstract class Entity implements Targetable {
             }
         }
         if (amount > 0) {
-            this.setHealth(this.getHealth() - amount);
+            this.setHealth(Math.max(0, this.getHealth() - amount));
         }
-        playHitEffect();
-    }
-
-    public void playHitEffect() {
-        if (imageView == null || imageView.getImage() == null) {
-            return;
-        }
-
-        if (hitEffectTimer != null) {
-            hitEffectTimer.stop();
-        } else {
-            originalEffect = imageView.getEffect();
-        }
-
-        double width = imageView.getBoundsInLocal().getWidth();
-        double height = imageView.getBoundsInLocal().getHeight();
-        if (width <= 0) width = imageView.getImage().getWidth();
-        if (height <= 0) height = imageView.getImage().getHeight();
-
-        ColorInput redOverlay = new ColorInput(0, 0, width, height, Color.color(1.0, 0.15, 0.15, 0.75));
-        Blend redBlend = new Blend(BlendMode.SRC_ATOP, null, redOverlay);
-
-        imageView.setEffect(redBlend);
-
-        hitEffectTimer = new PauseTransition(Duration.millis(180));
-        hitEffectTimer.setOnFinished(e -> {
-            imageView.setEffect(originalEffect);
-            hitEffectTimer = null;
-            originalEffect = null;
-        });
-        hitEffectTimer.play();
     }
 
     @Override

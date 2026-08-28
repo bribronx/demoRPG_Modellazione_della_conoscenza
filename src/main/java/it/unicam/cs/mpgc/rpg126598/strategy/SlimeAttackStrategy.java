@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.Hitbox;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 
 public class SlimeAttackStrategy implements AttackStrategy {
 
@@ -27,11 +26,10 @@ public class SlimeAttackStrategy implements AttackStrategy {
         List<Entity> targetableEntities = new ArrayList<>();
         if (attacker == null || targets == null) return targetableEntities;
 
-        Bounds aBox = attacker.getHitbox();
+        Hitbox aBox = attacker.getHitbox();
         if (aBox == null) return targetableEntities;
 
-        
-        Bounds contactBox = new BoundingBox(
+        Hitbox contactBox = new Hitbox(
                 aBox.getMinX() - margin,
                 aBox.getMinY() - margin,
                 aBox.getWidth() + (margin * 2),

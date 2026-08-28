@@ -1,8 +1,7 @@
 package it.unicam.cs.mpgc.rpg126598.service;
 
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
-import javafx.geometry.Bounds;
-import javafx.geometry.BoundingBox;
+import it.unicam.cs.mpgc.rpg126598.model.Hitbox;
 
 import java.util.List;
 
@@ -18,11 +17,11 @@ public class CollisionService {
         if (entity == null || collisionMap == null)
             return false;
 
-        Bounds futureHitbox = entity.getHitboxAt(deltaX, deltaY);
+        Hitbox futureHitbox = entity.getHitboxAt(deltaX, deltaY);
         return checkTileCollision(futureHitbox, collisionMap);
     }
 
-    public boolean checkTileCollision(Bounds hitbox, int[][] collisionMap) {
+    public boolean checkTileCollision(Hitbox hitbox, int[][] collisionMap) {
         if (hitbox == null || collisionMap == null)
             return false;
 
@@ -44,7 +43,7 @@ public class CollisionService {
         for (int row = minRow; row <= maxRow; row++) {
             for (int col = minCol; col <= maxCol; col++) {
                 if (collisionMap[row][col] >= 5) {
-                    Bounds tileBounds = new BoundingBox(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+                    Hitbox tileBounds = new Hitbox(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                     if (hitbox.intersects(tileBounds)) {
                         return true;
                     }
@@ -59,7 +58,7 @@ public class CollisionService {
         if (entity == null || otherEntities == null)
             return false;
 
-        Bounds futureHitbox = entity.getHitboxAt(deltaX, deltaY);
+        Hitbox futureHitbox = entity.getHitboxAt(deltaX, deltaY);
 
         for (Entity other : otherEntities) {
             if (other != null && other != entity) {
@@ -70,7 +69,6 @@ public class CollisionService {
         }
         return false;
     }
-
 
     public boolean checkCollision(Entity entity, double deltaX, double deltaY, int[][] collisionMap,
             List<? extends Entity> otherEntities) {

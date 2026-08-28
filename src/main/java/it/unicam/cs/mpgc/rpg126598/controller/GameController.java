@@ -19,6 +19,9 @@ import it.unicam.cs.mpgc.rpg126598.service.ItemService;
 import it.unicam.cs.mpgc.rpg126598.service.JsonSaveLoadService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.service.XpService;
+import it.unicam.cs.mpgc.rpg126598.view.EnemyAnimationRenderer;
+import it.unicam.cs.mpgc.rpg126598.view.EntityView;
+import it.unicam.cs.mpgc.rpg126598.view.EntityViewFactory;
 import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.geometry.Rectangle2D;
@@ -28,6 +31,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class GameController {
@@ -51,6 +56,9 @@ public class GameController {
     private final CombatService combatService = new CombatService(new CollisionService());
     private final ItemService itemService = new ItemService();
     private final JsonSaveLoadService saveLoadService = new JsonSaveLoadService();
+    private final EnemyAnimationRenderer enemyAnimationRenderer = new EnemyAnimationRenderer();
+    private final Map<Enemy, EntityView> enemyViews = new HashMap<>();
+
     private XpService xpService;
 
     private final String currentMapPath = "src/main/resources/it/unicam/cs/mpgc/rpg126598/map/world1.txt";
@@ -83,6 +91,15 @@ public class GameController {
                 System.out.println(attackerName + " infligge " + damage +
                         " danni a " + target.getClass().getSimpleName() +
                         " (HP rimanenti: " + target.getHealth() + ")");
+
+                if (target instanceof Player && playerController.getPlayerEntityView() != null) {
+                    playerController.getPlayerEntityView().playHitEffect();
+                } else if (target instanceof Enemy enemy) {
+                    EntityView view = enemyViews.get(enemy);
+                    if (view != null) {
+                        view.playHitEffect();
+                    }
+                }
             }
 
             @Override
@@ -90,10 +107,16 @@ public class GameController {
                 System.out.println(deadEntity.getClass().getSimpleName() + " e' morto!");
                 if (deadEntity instanceof Enemy enemy) {
                     enemyMovementService.removeEnemy(enemy);
-                    combatService.deathAnimation(enemy, () -> {
-                        mainPane.getChildren().remove(enemy.getImageView());
-                        mainPane.getChildren().remove(enemy.getShadow());
-                    });
+                    EntityView view = enemyViews.remove(enemy);
+                    if (view != null) {
+                        combatService.deathAnimation(enemy, view.getImageView(), enemyAnimationRenderer.getAnimationService(enemy), () -> {
+                            mainPane.getChildren().remove(view.getImageView());
+                            if (view.getShadow() != null) {
+                                mainPane.getChildren().remove(view.getShadow());
+                            }
+                            enemyAnimationRenderer.removeEnemy(enemy);
+                        });
+                    }
                     if (xpService != null) {
                         xpService.onEnemyDefeated(enemy);
                     }
@@ -102,8 +125,8 @@ public class GameController {
                     playerController.updateHealthBar();
                     playerController.updateDefenseBar();
                     gameLoop.stop();
-                    combatService.deathAnimation(playerController.getPlayer(), () -> {
-                        mainPane.getChildren().remove(playerController.getPlayer().getImageView());
+                    combatService.deathAnimation(playerController.getPlayer(), playerController.getPlayerImageView(), playerController.getAnimationService(), () -> {
+                        mainPane.getChildren().remove(playerController.getPlayerImageView());
                     });
                     playerController.showDeathScreen();
                 }
@@ -126,6 +149,16 @@ public class GameController {
                 if (!p.isDead() && !isPaused) {
                     playerController.update();
                     enemyMovementService.updateEnemies(p, now);
+
+                    // Sincronizza posizioni e animazioni di tutti i nemici
+                    for (Enemy enemy : enemyMovementService.getEnemies()) {
+                        EntityView view = enemyViews.get(enemy);
+                        if (view != null) {
+                            view.updatePosition(enemy.getX(), enemy.getY());
+                            enemyAnimationRenderer.updateAnimation(enemy, view.getImageView());
+                        }
+                    }
+
                     combatService.updateProjectiles(p, mapBuilderService.getCollisionMap());
                     itemService.update(p, playerController);
                 }
@@ -145,7 +178,6 @@ public class GameController {
         });
     }
 
-
     public void spawnEnemyAtTile(EnemyType type, int tileX, int tileY) {
         if (type == null) return;
         Enemy enemy = switch (type) {
@@ -156,23 +188,21 @@ public class GameController {
         spawnEnemyAtTile(enemy, tileX, tileY);
     }
 
-
     public void spawnEnemyAtTile(Enemy enemy, int tileX, int tileY) {
         if (enemy == null) return;
 
         double pixelX = tileX * TILE_SIZE;
         double pixelY = tileY * TILE_SIZE;
+        enemy.setPosition(pixelX, pixelY);
 
-        if (enemy.getImageView() != null) {
-            enemy.getImageView().setLayoutX(pixelX);
-            enemy.getImageView().setLayoutY(pixelY);
-        }
+        EntityView view = EntityViewFactory.createEnemyView(enemy);
+        enemyViews.put(enemy, view);
 
-        if (enemy.getShadow() != null && !mainPane.getChildren().contains(enemy.getShadow())) {
-            mainPane.getChildren().add(enemy.getShadow());
+        if (view.getShadow() != null && !mainPane.getChildren().contains(view.getShadow())) {
+            mainPane.getChildren().add(view.getShadow());
         }
-        if (enemy.getImageView() != null && !mainPane.getChildren().contains(enemy.getImageView())) {
-            mainPane.getChildren().add(enemy.getImageView());
+        if (view.getImageView() != null && !mainPane.getChildren().contains(view.getImageView())) {
+            mainPane.getChildren().add(view.getImageView());
         }
 
         enemyMovementService.addEnemy(enemy);
@@ -247,6 +277,7 @@ public class GameController {
         PlayerSaveData psd = data.getPlayer();
 
         if (psd != null) {
+            player.setPosition(psd.getX(), psd.getY());
             player.setHealth(psd.getHealth());
             player.setMaxHealth(psd.getMaxHealth());
             player.setDefense(psd.getDefense());
@@ -266,11 +297,11 @@ public class GameController {
                 player.setState(EntityState.IDLE);
             }
 
-            if (player.getAnimationService() != null) {
-                player.getAnimationService().stopAll();
+            if (playerController.getAnimationService() != null) {
+                playerController.getAnimationService().stopAll();
             }
 
-            ImageView pView = player.getImageView();
+            ImageView pView = playerController.getPlayerImageView();
             if (pView != null) {
                 if (!mainPane.getChildren().contains(pView)) {
                     mainPane.getChildren().add(pView);
@@ -290,13 +321,17 @@ public class GameController {
         }
 
         // Rimuovi tutti i nemici correnti dalla scena
-        for (Enemy enemy : enemyMovementService.getEnemies()) {
-            if (enemy.getAnimationService() != null) {
-                enemy.getAnimationService().stopAll();
+        for (Map.Entry<Enemy, EntityView> entry : enemyViews.entrySet()) {
+            EntityView view = entry.getValue();
+            if (view != null) {
+                mainPane.getChildren().remove(view.getImageView());
+                if (view.getShadow() != null) {
+                    mainPane.getChildren().remove(view.getShadow());
+                }
             }
-            mainPane.getChildren().remove(enemy.getImageView());
-            mainPane.getChildren().remove(enemy.getShadow());
         }
+        enemyAnimationRenderer.clear();
+        enemyViews.clear();
         enemyMovementService.clearEnemies();
         if (xpService != null) {
             xpService.clearEnemies();
@@ -308,14 +343,19 @@ public class GameController {
                 if (esd.getHealth() <= 0) continue;
                 Enemy enemy = createEnemyFromSaveData(esd);
                 if (enemy != null) {
+                    enemy.setPosition(esd.getX(), esd.getY());
+                    EntityView view = EntityViewFactory.createEnemyView(enemy);
+                    enemyViews.put(enemy, view);
                     enemyMovementService.addEnemy(enemy);
                     if (xpService != null) {
                         xpService.addEnemy(enemy);
                     }
-                    if (enemy.getShadow() != null) {
-                        mainPane.getChildren().add(enemy.getShadow());
+                    if (view.getShadow() != null) {
+                        mainPane.getChildren().add(view.getShadow());
                     }
-                    mainPane.getChildren().add(enemy.getImageView());
+                    if (view.getImageView() != null) {
+                        mainPane.getChildren().add(view.getImageView());
+                    }
                 }
             }
         }
@@ -354,16 +394,6 @@ public class GameController {
             enemy.setState(esd.getState());
         }
 
-        ImageView eView = enemy.getImageView();
-        if (eView != null) {
-            eView.setLayoutX(esd.getX());
-            eView.setLayoutY(esd.getY());
-            eView.setTranslateX(0);
-            eView.setTranslateY(0);
-            eView.setOpacity(1.0);
-            eView.setEffect(null);
-        }
-
         return enemy;
     }
 
@@ -371,13 +401,9 @@ public class GameController {
         if (gameLoop != null) {
             gameLoop.stop();
         }
-        for (Enemy enemy : enemyMovementService.getEnemies()) {
-            if (enemy.getAnimationService() != null) {
-                enemy.getAnimationService().stopAll();
-            }
-        }
-        if (playerController != null && playerController.getPlayer() != null && playerController.getPlayer().getAnimationService() != null) {
-            playerController.getPlayer().getAnimationService().stopAll();
+        enemyAnimationRenderer.clear();
+        if (playerController != null && playerController.getAnimationService() != null) {
+            playerController.getAnimationService().stopAll();
         }
     }
 

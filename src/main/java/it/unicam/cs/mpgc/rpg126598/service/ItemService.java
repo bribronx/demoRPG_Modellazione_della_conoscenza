@@ -3,20 +3,21 @@ package it.unicam.cs.mpgc.rpg126598.service;
 import it.unicam.cs.mpgc.rpg126598.controller.PlayerController;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
 import it.unicam.cs.mpgc.rpg126598.model.ShieldItem;
-import javafx.animation.FadeTransition;
-import javafx.animation.ParallelTransition;
-import javafx.animation.TranslateTransition;
+import it.unicam.cs.mpgc.rpg126598.view.EntityViewFactory;
+import it.unicam.cs.mpgc.rpg126598.view.ShieldItemView;
 import javafx.scene.layout.Pane;
-import javafx.util.Duration;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class ItemService {
 
     private static final int TILE_SIZE = 16;
     private final List<ShieldItem> shieldItems = new ArrayList<>();
+    private final Map<ShieldItem, ShieldItemView> itemViews = new HashMap<>();
     private Pane parentPane;
 
     public ItemService() {
@@ -35,13 +36,17 @@ public class ItemService {
         double pixelY = tileY * TILE_SIZE;
 
         ShieldItem item = new ShieldItem(pixelX, pixelY, amount);
+        ShieldItemView view = EntityViewFactory.createShieldItemView(item);
+
         shieldItems.add(item);
+        itemViews.put(item, view);
+
         if (parentPane != null) {
-            if (item.getShadow() != null && !parentPane.getChildren().contains(item.getShadow())) {
-                parentPane.getChildren().add(item.getShadow());
+            if (view.getShadow() != null && !parentPane.getChildren().contains(view.getShadow())) {
+                parentPane.getChildren().add(view.getShadow());
             }
-            if (item.getImageView() != null && !parentPane.getChildren().contains(item.getImageView())) {
-                parentPane.getChildren().add(item.getImageView());
+            if (view.getImageView() != null && !parentPane.getChildren().contains(view.getImageView())) {
+                parentPane.getChildren().add(view.getImageView());
             }
         }
         return item;
@@ -66,47 +71,35 @@ public class ItemService {
                         playerController.updateDefenseBar();
                     }
 
-                    playPickupAnimation(item);
+                    ShieldItemView view = itemViews.remove(item);
+                    if (view != null) {
+                        if (view.getShadow() != null && parentPane != null) {
+                            parentPane.getChildren().remove(view.getShadow());
+                        }
+                        view.playPickupAnimation(() -> {
+                            if (parentPane != null && view.getImageView() != null) {
+                                parentPane.getChildren().remove(view.getImageView());
+                            }
+                        });
+                    }
                     System.out.println("Item Scudo raccolto! Difesa attuale: " + player.getDefense() + " / " + player.getMaxDefense());
                 }
             }
         }
     }
 
-    private void playPickupAnimation(ShieldItem item) {
-        if (item.getShadow() != null && parentPane != null) {
-            parentPane.getChildren().remove(item.getShadow());
-        }
-
-        if (item.getImageView() != null && parentPane != null) {
-            FadeTransition fade = new FadeTransition(Duration.millis(250), item.getImageView());
-            fade.setFromValue(1.0);
-            fade.setToValue(0.0);
-
-            TranslateTransition moveUp = new TranslateTransition(Duration.millis(250), item.getImageView());
-            moveUp.setByY(-16.0);
-
-            ParallelTransition pt = new ParallelTransition(fade, moveUp);
-            pt.setOnFinished(e -> {
-                if (parentPane != null) {
-                    parentPane.getChildren().remove(item.getImageView());
-                }
-            });
-            pt.play();
-        }
-    }
-
     public void clear() {
         if (parentPane != null) {
-            for (ShieldItem item : shieldItems) {
-                if (item.getShadow() != null) {
-                    parentPane.getChildren().remove(item.getShadow());
+            for (ShieldItemView view : itemViews.values()) {
+                if (view.getShadow() != null) {
+                    parentPane.getChildren().remove(view.getShadow());
                 }
-                if (item.getImageView() != null) {
-                    parentPane.getChildren().remove(item.getImageView());
+                if (view.getImageView() != null) {
+                    parentPane.getChildren().remove(view.getImageView());
                 }
             }
         }
+        itemViews.clear();
         shieldItems.clear();
     }
 

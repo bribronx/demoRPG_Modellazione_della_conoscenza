@@ -2,9 +2,12 @@ package it.unicam.cs.mpgc.rpg126598.service;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
+import it.unicam.cs.mpgc.rpg126598.model.Hitbox;
 import it.unicam.cs.mpgc.rpg126598.model.Slime;
 import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
@@ -15,9 +18,10 @@ import it.unicam.cs.mpgc.rpg126598.model.Skeleton;
 import it.unicam.cs.mpgc.rpg126598.model.BoneProjectile;
 import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.strategy.SkeletonAttackStrategy;
-import javafx.geometry.Bounds;
-import javafx.geometry.BoundingBox;
+import it.unicam.cs.mpgc.rpg126598.view.BoneProjectileView;
+import it.unicam.cs.mpgc.rpg126598.view.EntityViewFactory;
 import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.animation.PauseTransition;
 import javafx.util.Duration;
@@ -32,11 +36,13 @@ public class CombatService {
 
     private final CollisionService collisionService;
     private final LoadFramesService loadFramesService = new LoadFramesService();
+    private final AnimationService animationService = new AnimationService();
     private CombatListener listener;
     private MapBuilderService mapBuilderService;
 
     private Pane parentPane;
     private final List<BoneProjectile> projectiles = new ArrayList<>();
+    private final Map<BoneProjectile, BoneProjectileView> projectileViews = new HashMap<>();
     private Image[] boneFrames;
 
     public CombatService(CollisionService collisionService) {
@@ -55,6 +61,10 @@ public class CombatService {
         this.listener = listener;
     }
 
+    public AnimationService getAnimationService() {
+        return animationService;
+    }
+
     public void tryEnemyAttack(Enemy enemy, Player targetPlayer) {
         if (enemy == null || targetPlayer == null || targetPlayer.isDead() || enemy.getAttackStrategy() == null) {
             return;
@@ -67,8 +77,8 @@ public class CombatService {
                 inRange = !targets.isEmpty();
             }
         } else {
-            double dist = Math.hypot(targetPlayer.getGlobalX() - enemy.getGlobalX(),
-                                     targetPlayer.getGlobalY() - enemy.getGlobalY());
+            double dist = Math.hypot(targetPlayer.getX() - enemy.getX(),
+                                     targetPlayer.getY() - enemy.getY());
             inRange = (dist <= enemy.getAttackRange());
         }
 
@@ -84,8 +94,6 @@ public class CombatService {
 
     public void executeAttack(Entity attacker, List<? extends Entity> targets, AttackStrategy attackStrategy) {
         if (attackStrategy instanceof SkeletonAttackStrategy) {
-            attackAnimation(attacker);
-
             PauseTransition delay = new PauseTransition(Duration.millis(500));
             delay.setOnFinished(event -> spawnBones(attacker));
             delay.play();
@@ -114,8 +122,8 @@ public class CombatService {
     public void applyKnockback(Entity attacker, Entity target, double distance) {
         if (attacker == null || target == null)
             return;
-        double dx = target.getGlobalX() - attacker.getGlobalX();
-        double dy = target.getGlobalY() - attacker.getGlobalY();
+        double dx = target.getX() - attacker.getX();
+        double dy = target.getY() - attacker.getY();
         double len = Math.hypot(dx, dy);
 
         double dirX = 0;
@@ -141,8 +149,8 @@ public class CombatService {
     public void applyKnockback(double sourceX, double sourceY, Entity target, double distance) {
         if (target == null)
             return;
-        double dx = target.getGlobalX() - sourceX;
-        double dy = target.getGlobalY() - sourceY;
+        double dx = target.getX() - sourceX;
+        double dy = target.getY() - sourceY;
         double len = Math.hypot(dx, dy);
 
         double dirX = 0;
@@ -188,8 +196,8 @@ public class CombatService {
             boneFrames = loadFramesService.loadFrames("skeleton", "bone_sprites", "bone_frame", 8);
         }
 
-        double startX = attacker.getGlobalX();
-        double startY = attacker.getGlobalY();
+        double startX = attacker.getX();
+        double startY = attacker.getY();
         double damage = attacker.getDamage();
 
         double speed = 1.0;
@@ -211,19 +219,25 @@ public class CombatService {
                 break;
         }
 
-        BoneProjectile proj = new BoneProjectile(startX, startY, vx, vy, damage, boneFrames);
+        BoneProjectile proj = new BoneProjectile(startX, startY, vx, vy, damage);
+        BoneProjectileView view = EntityViewFactory.createBoneProjectileView(proj, boneFrames);
         projectiles.add(proj);
-        parentPane.getChildren().add(proj.getImageView());
+        projectileViews.put(proj, view);
+        parentPane.getChildren().add(view.getImageView());
     }
 
     public void updateProjectiles(Player player, int[][] collisionMap) {
         List<BoneProjectile> toRemove = new ArrayList<>();
-        Bounds playerHitbox = player.getHitbox();
+        Hitbox playerHitbox = player.getHitbox();
 
         for (BoneProjectile proj : projectiles) {
             proj.update();
+            BoneProjectileView view = projectileViews.get(proj);
+            if (view != null) {
+                view.update(proj);
+            }
 
-            Bounds projHitbox = new BoundingBox(proj.getX(), proj.getY(), 8, 8);
+            Hitbox projHitbox = proj.getHitbox();
 
             if (projHitbox.intersects(playerHitbox)) {
                 player.takeDamage(proj.getDamage());
@@ -245,14 +259,16 @@ public class CombatService {
         }
 
         for (BoneProjectile proj : toRemove) {
-            if (parentPane != null) {
-                parentPane.getChildren().remove(proj.getImageView());
+            BoneProjectileView view = projectileViews.remove(proj);
+            if (view != null && parentPane != null) {
+                parentPane.getChildren().remove(view.getImageView());
             }
         }
         projectiles.removeAll(toRemove);
     }
 
-    public void attackAnimation(Entity attacker) {
+    public void attackAnimation(Entity attacker, ImageView imageView, AnimationService animService) {
+        if (attacker == null || imageView == null || animService == null) return;
         String entityName = attacker.getClass().getSimpleName().toLowerCase();
 
         if (attacker instanceof Zombie) {
@@ -264,7 +280,7 @@ public class CombatService {
         String prefix = entityName + "_attack_" + directionStr;
 
         int frameCount = 4;
-        double frameDuration = 60; // default
+        double frameDuration = 60;
 
         if (attacker instanceof Player) {
             if (attacker.getDirection() == Direction.DOWN) {
@@ -279,14 +295,14 @@ public class CombatService {
         }
 
         Image[] frames = loadFramesService.loadFrames(entityName, folder2, prefix, frameCount);
-        attacker.getAnimationService().attackAnimation(attacker.getImageView(), frames, frameDuration);
+        animService.attackAnimation(imageView, frames, frameDuration);
     }
 
-    public void deathAnimation(Entity entity) {
-        deathAnimation(entity, null);
-    }
-
-    public void deathAnimation(Entity entity, Runnable onFinished) {
+    public void deathAnimation(Entity entity, ImageView imageView, AnimationService animService, Runnable onFinished) {
+        if (entity == null || imageView == null || animService == null) {
+            if (onFinished != null) onFinished.run();
+            return;
+        }
         String entityName = entity.getClass().getSimpleName().toLowerCase();
         String folder2 = "death";
         String prefix = entityName + "_death";
@@ -310,7 +326,6 @@ public class CombatService {
         }
 
         Image[] frames = loadFramesService.loadFrames(entityName, folder2, prefix, frameCount);
-        entity.getAnimationService().deathAnimation(entity.getImageView(), frames, frameDuration, onFinished);
+        animService.deathAnimation(imageView, frames, frameDuration, onFinished);
     }
-
 }

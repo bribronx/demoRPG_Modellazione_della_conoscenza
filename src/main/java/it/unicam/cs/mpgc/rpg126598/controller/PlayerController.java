@@ -1,14 +1,19 @@
 package it.unicam.cs.mpgc.rpg126598.controller;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
+import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
+import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
+import it.unicam.cs.mpgc.rpg126598.service.LoadFramesService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerCameraService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.XpService;
 import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
+import it.unicam.cs.mpgc.rpg126598.view.EntityView;
+import it.unicam.cs.mpgc.rpg126598.view.EntityViewFactory;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
@@ -19,6 +24,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -69,8 +75,17 @@ public class PlayerController {
     @FXML
     private Label notificationLabel;
 
-
     private final Player player;
+    private ImageView playerImageView;
+    private EntityView playerEntityView;
+    private final AnimationService animationService = new AnimationService();
+    private final LoadFramesService loadFramesService = new LoadFramesService();
+
+    private final Image[] rightFrames;
+    private final Image[] leftFrames;
+    private final Image[] upFrames;
+    private final Image[] downFrames;
+
     private PlayerMovementService movementService;
     private PlayerCameraService cameraService;
     private AttackStrategy attackStrategy;
@@ -90,6 +105,11 @@ public class PlayerController {
     public PlayerController() {
         this.player = new Player();
         this.attackStrategy = new MeleeAttackStrategy();
+
+        rightFrames = loadFramesService.loadFrames("player", "walk_right", "player_walk_right", 6);
+        leftFrames = loadFramesService.loadFrames("player", "walk_left", "player_walk_left", 6);
+        upFrames = loadFramesService.loadFrames("player", "walk_up", "player_walk_up", 6);
+        downFrames = loadFramesService.loadFrames("player", "walk_down", "player_walk_down", 6);
     }
 
     @FXML
@@ -107,7 +127,12 @@ public class PlayerController {
 
     public void initServices(ImageView playerImageView, MapBuilderService mapBuilderService, Pane mainPane,
             double mapWidth, double mapHeight) {
-        this.player.setImageView(playerImageView);
+        this.playerImageView = playerImageView;
+        if (playerImageView != null) {
+            this.player.setPosition(playerImageView.getLayoutX(), playerImageView.getLayoutY());
+            this.playerEntityView = EntityViewFactory.createPlayerView(playerImageView);
+        }
+
         this.movementService = new PlayerMovementService(this.player, mapBuilderService);
         this.cameraService = new PlayerCameraService(this.player, mainPane, 6, mapWidth, mapHeight);
 
@@ -163,6 +188,18 @@ public class PlayerController {
 
     public XpService getXpService() {
         return xpService;
+    }
+
+    public EntityView getPlayerEntityView() {
+        return playerEntityView;
+    }
+
+    public ImageView getPlayerImageView() {
+        return playerImageView;
+    }
+
+    public AnimationService getAnimationService() {
+        return animationService;
     }
 
     public void showLevelUpCard(int newLevel) {
@@ -432,7 +469,7 @@ public class PlayerController {
         if (currentTime - player.getLastAttackTime() >= cooldownMillis) {
             if (combatService != null && enemyMovementService != null) {
                 combatService.executeAttack(player, enemyMovementService.getEnemies(), attackStrategy);
-                combatService.attackAnimation(player);
+                combatService.attackAnimation(player, playerImageView, animationService);
                 player.setLastAttackTime(currentTime);
             }
         }
@@ -442,6 +479,23 @@ public class PlayerController {
         if (!player.isDead()) {
             if (movementService != null && enemyMovementService != null) {
                 movementService.updateMovement(pressedKeys, enemyMovementService.getEnemies());
+            }
+
+            if (playerEntityView != null) {
+                playerEntityView.updatePosition(player.getX(), player.getY());
+            }
+
+            if (playerImageView != null) {
+                if (player.getState() == EntityState.MOVING && !animationService.isAttacking()) {
+                    switch (player.getDirection()) {
+                        case UP -> animationService.walkingAnimation(playerImageView, upFrames, 100);
+                        case DOWN -> animationService.walkingAnimation(playerImageView, downFrames, 100);
+                        case LEFT -> animationService.walkingAnimation(playerImageView, leftFrames, 100);
+                        case RIGHT -> animationService.walkingAnimation(playerImageView, rightFrames, 100);
+                    }
+                } else if (!animationService.isAttacking()) {
+                    animationService.stopWalking();
+                }
             }
 
             if (cameraService != null) {

@@ -1,7 +1,6 @@
 package it.unicam.cs.mpgc.rpg126598.service;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
@@ -32,11 +31,10 @@ public class PlayerCameraService {
     }
 
     public void updateCamera() {
-        ImageView imageP = player.getImageView();
-        if (imageP == null) return;
+        if (player == null || mainPane == null) return;
 
-        double playerX = imageP.getLayoutX() + imageP.getTranslateX() + imageP.getFitWidth() / 2.0;
-        double playerY = imageP.getLayoutY() + imageP.getTranslateY() + imageP.getFitHeight() / 2.0;
+        double playerX = player.getX() + player.getWidth() / 2.0;
+        double playerY = player.getY() + player.getHeight() / 2.0;
 
         double sceneWidth = mainPane.getPrefWidth();
         double sceneHeight = mainPane.getPrefHeight();

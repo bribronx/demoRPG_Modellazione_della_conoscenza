@@ -5,39 +5,27 @@ import java.util.List;
 
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
-import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
-import it.unicam.cs.mpgc.rpg126598.service.LoadFramesService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 
 public class ZombieMovementStrategy implements EnemyMovementStrategy {
 
-    private final LoadFramesService loadFramesService = new LoadFramesService();
-
-    private final Image[] idleFrames = loadFramesService.loadFrames("zombie", "idle", "zombie_idle", 8);
-    private final Image[] walkDownFrames = loadFramesService.loadFrames("zombie", "walk_down", "zombie_walk_down", 8);
-    private final Image[] walkLeftFrames = loadFramesService.loadFrames("zombie", "walk_left", "zombie_walk_left", 8);
-    private final Image[] walkRightFrames = loadFramesService.loadFrames("zombie", "walk_right", "zombie_walk_right", 8);
-    private final Image[] walkUpFrames = loadFramesService.loadFrames("zombie", "walk_up", "zombie_walk_up", 8);
-
-    double dirX=0;
-    double dirY=0;
-
+    private double dirX = 0;
+    private double dirY = 0;
 
     @Override
     public void move(Enemy enemy, Player target, List<Enemy> enemies, MapBuilderService mapBuilderService,
             CollisionService collisionService, double deltaTime) {
-        if (target == null || target.getImageView() == null)
+        if (target == null)
             return;
 
-        double enemyX = enemy.getGlobalX();
-        double enemyY = enemy.getGlobalY();
-        double playerX = target.getGlobalX();
-        double playerY = target.getGlobalY();
+        double enemyX = enemy.getX();
+        double enemyY = enemy.getY();
+        double playerX = target.getX();
+        double playerY = target.getY();
 
         double distance = Math.hypot(playerX - enemyX, playerY - enemyY);
 
@@ -70,32 +58,22 @@ public class ZombieMovementStrategy implements EnemyMovementStrategy {
                             || collisionService.checkCollision(enemy, 0, deltaY, collisionMap, others))) {
                 enemy.moveY(deltaY);
             }
+
+            if (Math.abs(dirX) > Math.abs(dirY)) {
+                if (dirX > 0) {
+                    enemy.setDirection(Direction.RIGHT);
+                } else {
+                    enemy.setDirection(Direction.LEFT);
+                }
+            } else {
+                if (dirY > 0) {
+                    enemy.setDirection(Direction.DOWN);
+                } else {
+                    enemy.setDirection(Direction.UP);
+                }
+            }
         } else {
             enemy.setState(EntityState.IDLE);
         }
-
-        ImageView imageView = enemy.getImageView();
-        if (imageView != null) {
-            AnimationService animationService = enemy.getAnimationService();
-            if (enemy.getState() == EntityState.CHASING) {
-                if (Math.abs(dirX) > Math.abs(dirY)) {
-                    if (dirX > 0) {
-                        animationService.walkingAnimation(imageView, walkRightFrames, 150);
-                    } else {
-                        animationService.walkingAnimation(imageView, walkLeftFrames, 150);
-                    }
-                } else {
-                    if (dirY > 0) {
-                        animationService.walkingAnimation(imageView, walkDownFrames, 150);
-                    } else {
-                        animationService.walkingAnimation(imageView, walkUpFrames, 150);
-                    }
-                }
-            } else {
-                animationService.walkingAnimation(imageView, idleFrames, 150);
-            }
-        }
-        
     }
-
 }

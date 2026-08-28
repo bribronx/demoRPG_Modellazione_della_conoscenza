@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.Hitbox;
 import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
 
-public class MeleeAttackStrategy implements AttackStrategy{
+public class MeleeAttackStrategy implements AttackStrategy {
 
     private double cooldown = 0.5;
 
@@ -28,7 +27,7 @@ public class MeleeAttackStrategy implements AttackStrategy{
             return targetableEntities;
         }
 
-        Bounds attackerHitbox = attacker.getHitbox();
+        Hitbox attackerHitbox = attacker.getHitbox();
         if (attackerHitbox == null) {
             return targetableEntities;
         }
@@ -44,33 +43,33 @@ public class MeleeAttackStrategy implements AttackStrategy{
         Direction dir = attacker.getDirection();
         if (dir == null) dir = Direction.DOWN;
 
-        Bounds attackBox;
+        Hitbox attackBox;
         switch (dir) {
-            case UP -> attackBox = new BoundingBox(
+            case UP -> attackBox = new Hitbox(
                     minX - sidePadding,
                     minY - reach,
                     width + (sidePadding * 2),
                     reach + sidePadding
             );
-            case DOWN -> attackBox = new BoundingBox(
+            case DOWN -> attackBox = new Hitbox(
                     minX - sidePadding,
                     minY + height - sidePadding,
                     width + (sidePadding * 2),
                     reach + sidePadding
             );
-            case LEFT -> attackBox = new BoundingBox(
+            case LEFT -> attackBox = new Hitbox(
                     minX - reach,
                     minY - sidePadding,
                     reach + sidePadding,
                     height + (sidePadding * 2)
             );
-            case RIGHT -> attackBox = new BoundingBox(
+            case RIGHT -> attackBox = new Hitbox(
                     minX + width - sidePadding,
                     minY - sidePadding,
                     reach + sidePadding,
                     height + (sidePadding * 2)
             );
-            default -> attackBox = new BoundingBox(
+            default -> attackBox = new Hitbox(
                     minX - 3.0,
                     minY - 3.0,
                     width + 6.0,

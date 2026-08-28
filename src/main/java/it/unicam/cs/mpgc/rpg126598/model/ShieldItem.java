@@ -1,46 +1,28 @@
 package it.unicam.cs.mpgc.rpg126598.model;
 
-import javafx.geometry.BoundingBox;
-import javafx.geometry.Bounds;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.paint.Color;
-
-import java.util.Objects;
-
 public class ShieldItem {
 
-    private final ImageView imageView;
-    private final Ellipse shadow;
-    private final double shieldAmount;
-    private boolean collected = false;
     private final double x;
     private final double y;
+    private final double width;
+    private final double height;
+    private final double shieldAmount;
+    private boolean collected = false;
 
     public ShieldItem(double x, double y, double shieldAmount) {
-        this.x = x;
-        this.y = y;
-        this.shieldAmount = shieldAmount;
-
-        this.imageView = new ImageView(new Image(Objects.requireNonNull(
-                getClass().getResourceAsStream("/it/unicam/cs/mpgc/rpg126598/player/shield.png"))));
-        this.imageView.setFitWidth(10);
-        this.imageView.setFitHeight(10);
-        this.imageView.setLayoutX(x);
-        this.imageView.setLayoutY(y);
-
-        this.shadow = new Ellipse();
-        this.shadow.setRadiusX(4.0);
-        this.shadow.setRadiusY(2.0);
-        this.shadow.setFill(Color.color(0, 0, 0, 0.25));
-        this.shadow.setLayoutX(x + 5.0);
-        this.shadow.setLayoutY(y + 9.5);
+        this(x, y, 10.0, 10.0, shieldAmount);
     }
 
+    public ShieldItem(double x, double y, double width, double height, double shieldAmount) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.shieldAmount = shieldAmount;
+    }
 
-    public Bounds getHitbox() {
-        return new BoundingBox(x, y, 10, 10);
+    public Hitbox getHitbox() {
+        return new Hitbox(x, y, width, height);
     }
 
     public boolean checkCollision(Player player) {
@@ -53,14 +35,6 @@ public class ShieldItem {
         this.collected = true;
         double newDefense = Math.min(player.getMaxDefense(), player.getDefense() + shieldAmount);
         player.setDefense(newDefense);
-    }
-
-    public ImageView getImageView() {
-        return imageView;
-    }
-
-    public Ellipse getShadow() {
-        return shadow;
     }
 
     public boolean isCollected() {
@@ -77,6 +51,14 @@ public class ShieldItem {
 
     public double getY() {
         return y;
+    }
+
+    public double getWidth() {
+        return width;
+    }
+
+    public double getHeight() {
+        return height;
     }
 
     public double getShieldAmount() {

@@ -2,14 +2,11 @@ package it.unicam.cs.mpgc.rpg126598.strategy;
 
 import it.unicam.cs.mpgc.rpg126598.model.Enemy;
 import it.unicam.cs.mpgc.rpg126598.model.Entity;
+import it.unicam.cs.mpgc.rpg126598.model.enums.Direction;
 import it.unicam.cs.mpgc.rpg126598.model.enums.EntityState;
 import it.unicam.cs.mpgc.rpg126598.model.Player;
 import it.unicam.cs.mpgc.rpg126598.service.CollisionService;
-import it.unicam.cs.mpgc.rpg126598.service.LoadFramesService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
-import it.unicam.cs.mpgc.rpg126598.service.AnimationService;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +26,6 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
     private double dirX = 0;
     private double dirY = 0;
 
-    private final LoadFramesService loadFramesService = new LoadFramesService();
-
-    private final Image[] idleFrames = loadFramesService.loadFrames("slime", "idle", "slime_idle", 4);
-    private final Image[] walkDownFrames = loadFramesService.loadFrames("slime", "walk_down", "slime_walk_down", 4);
-    private final Image[] walkLeftFrames = loadFramesService.loadFrames("slime", "walk_left", "slime_walk_left", 4);
-    private final Image[] walkRightFrames = loadFramesService.loadFrames("slime", "walk_right", "slime_walk_right", 4);
-    private final Image[] walkUpFrames = loadFramesService.loadFrames("slime", "walk_up", "slime_walk_up", 4);
     public SlimeMovementStrategy() {}
 
     public SlimeMovementStrategy(double hopDuration, double pauseDuration) {
@@ -47,7 +37,7 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
     public void move(Enemy enemy, Player target, List<Enemy> enemies, MapBuilderService mapBuilderService,
             CollisionService collisionService, double deltaTime) {
 
-        // il primo frame non va considerato, per questo controllo che sia 0
+        // il primo frame non va considerato
         if (lastNow == 0) {
             lastNow = deltaTime;
             return;
@@ -78,7 +68,7 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
                     others.add(target);
                 }
 
-                //movimento dello slime e nel caso di collisione rimbalzo
+                // movimento dello slime e nel caso di collisione rimbalzo
                 if (deltaX != 0 && (collisionService == null
                         || collisionService.checkCollision(enemy, deltaX, 0, collisionMap, others))) {
                     enemy.moveX(deltaX);
@@ -92,22 +82,36 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
                 } else {
                     dirY = -dirY;
                 }
+
+                if (Math.abs(dirX) > Math.abs(dirY)) {
+                    if (dirX > 0) {
+                        enemy.setDirection(Direction.RIGHT);
+                    } else {
+                        enemy.setDirection(Direction.LEFT);
+                    }
+                } else {
+                    if (dirY > 0) {
+                        enemy.setDirection(Direction.DOWN);
+                    } else {
+                        enemy.setDirection(Direction.UP);
+                    }
+                }
             }
         } else {
-            //gestione della fase di pausa tra un balzo e l'altro
+            // gestione della fase di pausa tra un balzo e l'altro
             if (stateTimer >= pauseDuration) {
                 isHopping = true;
                 stateTimer = 0;
                 enemy.setState(EntityState.MOVING);
-                if (target != null && target.getImageView() != null) {
-                    double enemyX = enemy.getGlobalX();
-                    double enemyY = enemy.getGlobalY();
-                    double playerX = target.getGlobalX();
-                    double playerY = target.getGlobalY();
+                if (target != null) {
+                    double enemyX = enemy.getX();
+                    double enemyY = enemy.getY();
+                    double playerX = target.getX();
+                    double playerY = target.getY();
 
                     double distance = Math.hypot(playerX - enemyX, playerY - enemyY);
 
-                    //scelta della direzione in base alla posizione del giocatore
+                    // scelta della direzione in base alla posizione del giocatore
                     if (distance <= enemy.getAggroRange() && distance > 0) {
                         dirX = (playerX - enemyX) / distance;
                         dirY = (playerY - enemyY) / distance;
@@ -117,27 +121,20 @@ public class SlimeMovementStrategy implements EnemyMovementStrategy {
                 } else {
                     chooseRandomDirection();
                 }
-            }
-        }
-        ImageView imageView = enemy.getImageView();
-        if (imageView != null) {
-            AnimationService animationService = enemy.getAnimationService();
-            if (isHopping) {
+
                 if (Math.abs(dirX) > Math.abs(dirY)) {
                     if (dirX > 0) {
-                        animationService.walkingAnimation(imageView, walkRightFrames, 180);
+                        enemy.setDirection(Direction.RIGHT);
                     } else {
-                        animationService.walkingAnimation(imageView, walkLeftFrames, 180);
+                        enemy.setDirection(Direction.LEFT);
                     }
                 } else {
                     if (dirY > 0) {
-                        animationService.walkingAnimation(imageView, walkDownFrames, 180);
+                        enemy.setDirection(Direction.DOWN);
                     } else {
-                        animationService.walkingAnimation(imageView, walkUpFrames, 180);
+                        enemy.setDirection(Direction.UP);
                     }
                 }
-            } else {
-                animationService.walkingAnimation(imageView, idleFrames, 180);
             }
         }
     }
