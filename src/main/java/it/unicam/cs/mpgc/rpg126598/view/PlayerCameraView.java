@@ -1,11 +1,12 @@
-package it.unicam.cs.mpgc.rpg126598.service;
+package it.unicam.cs.mpgc.rpg126598.view;
 
 import it.unicam.cs.mpgc.rpg126598.model.Player;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 import javafx.scene.transform.Translate;
 
-public class PlayerCameraService {
+
+public class PlayerCameraView {
 
     private final Player player;
     private final Pane mainPane;
@@ -13,11 +14,11 @@ public class PlayerCameraService {
     private double mapWidth;
     private double mapHeight;
 
-    public PlayerCameraService(Player player, Pane mainPane, int zoom) {
+    public PlayerCameraView(Player player, Pane mainPane, int zoom) {
         this(player, mainPane, zoom, 0, 0);
     }
 
-    public PlayerCameraService(Player player, Pane mainPane, int zoom, double mapWidth, double mapHeight) {
+    public PlayerCameraView(Player player, Pane mainPane, int zoom, double mapWidth, double mapHeight) {
         this.player = player;
         this.mainPane = mainPane;
         this.zoom = zoom;
@@ -75,5 +76,13 @@ public class PlayerCameraService {
         Translate translate = new Translate(translateX, translateY);
 
         mainPane.getTransforms().setAll(translate, scale);
+    }
+
+    public int getZoom() {
+        return zoom;
+    }
+
+    public Pane getMainPane() {
+        return mainPane;
     }
 }

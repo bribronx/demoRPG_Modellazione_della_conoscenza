@@ -7,13 +7,13 @@ import it.unicam.cs.mpgc.rpg126598.service.CombatService;
 import it.unicam.cs.mpgc.rpg126598.service.EnemyMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.LoadFramesService;
 import it.unicam.cs.mpgc.rpg126598.service.MapBuilderService;
-import it.unicam.cs.mpgc.rpg126598.service.PlayerCameraService;
 import it.unicam.cs.mpgc.rpg126598.service.PlayerMovementService;
 import it.unicam.cs.mpgc.rpg126598.service.XpService;
 import it.unicam.cs.mpgc.rpg126598.strategy.AttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.strategy.MeleeAttackStrategy;
 import it.unicam.cs.mpgc.rpg126598.view.EntityView;
 import it.unicam.cs.mpgc.rpg126598.view.EntityViewFactory;
+import it.unicam.cs.mpgc.rpg126598.view.PlayerCameraView;
 import javafx.animation.FadeTransition;
 import javafx.animation.PauseTransition;
 import javafx.event.ActionEvent;
@@ -87,7 +87,7 @@ public class PlayerController {
     private final Image[] downFrames;
 
     private PlayerMovementService movementService;
-    private PlayerCameraService cameraService;
+    private PlayerCameraView cameraView;
     private AttackStrategy attackStrategy;
 
     private final Set<KeyCode> pressedKeys = new HashSet<>();
@@ -134,7 +134,7 @@ public class PlayerController {
         }
 
         this.movementService = new PlayerMovementService(this.player, mapBuilderService);
-        this.cameraService = new PlayerCameraService(this.player, mainPane, 6, mapWidth, mapHeight);
+        this.cameraView = new PlayerCameraView(this.player, mainPane, 6, mapWidth, mapHeight);
 
         if (this.hpBar != null) {
             this.hpBar.setPrefWidth(player.getMaxHealth() * HP_SCALE);
@@ -146,7 +146,7 @@ public class PlayerController {
         }
         updateXpBar();
 
-        this.cameraService.updateCamera();
+        this.cameraView.updateCamera();
     }
 
     public void setCombatService(CombatService combatService) {
@@ -498,8 +498,8 @@ public class PlayerController {
                 }
             }
 
-            if (cameraService != null) {
-                cameraService.updateCamera();
+            if (cameraView != null) {
+                cameraView.updateCamera();
             }
         }
         updateHealthBar();
@@ -566,8 +566,8 @@ public class PlayerController {
         return movementService;
     }
 
-    public PlayerCameraService getCameraService() {
-        return cameraService;
+    public PlayerCameraView getCameraView() {
+        return cameraView;
     }
 
     public AttackStrategy getAttackStrategy() {
