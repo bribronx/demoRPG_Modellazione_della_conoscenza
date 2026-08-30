@@ -223,6 +223,7 @@ public class GameController {
         itemService.spawnShieldItemAtTile(53, 5, 20.0);
         itemService.spawnShieldItemAtTile(41, 19, 20.0);
         itemService.spawnShieldItemAtTile(21, 4, 20.0);
+        itemService.spawnSwordItemAtTile(5,24);
     }
 
     public void saveDefaultGame() {

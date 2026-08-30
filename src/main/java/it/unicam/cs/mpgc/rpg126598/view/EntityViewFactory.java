@@ -1,12 +1,6 @@
 package it.unicam.cs.mpgc.rpg126598.view;
 
-import it.unicam.cs.mpgc.rpg126598.model.BoneProjectile;
-import it.unicam.cs.mpgc.rpg126598.model.Enemy;
-import it.unicam.cs.mpgc.rpg126598.model.Player;
-import it.unicam.cs.mpgc.rpg126598.model.ShieldItem;
-import it.unicam.cs.mpgc.rpg126598.model.Skeleton;
-import it.unicam.cs.mpgc.rpg126598.model.Slime;
-import it.unicam.cs.mpgc.rpg126598.model.Zombie;
+import it.unicam.cs.mpgc.rpg126598.model.*;
 import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -22,6 +16,7 @@ public class EntityViewFactory {
     private static final String SLIME_IDLE_SPRITE = "/it/unicam/cs/mpgc/rpg126598/slime/idle/slime_idle_01.png";
     private static final String ZOMBIE_IDLE_SPRITE = "/it/unicam/cs/mpgc/rpg126598/zombie/idle/zombie_idle_01.png";
     private static final String SHIELD_SPRITE = "/it/unicam/cs/mpgc/rpg126598/player/shield.png";
+    private static final String SWORD_SPRITE = "/it/unicam/cs/mpgc/rpg126598/player/sword.png";
 
     public static EntityView createPlayerView(ImageView playerImageView) {
         Ellipse shadow = createEntityShadow(playerImageView);
@@ -64,14 +59,22 @@ public class EntityViewFactory {
         imageView.setLayoutX(item.getX());
         imageView.setLayoutY(item.getY());
 
-        Ellipse shadow = new Ellipse();
-        shadow.setRadiusX(4.0);
-        shadow.setRadiusY(2.0);
-        shadow.setFill(Color.color(0, 0, 0, 0.25));
-        shadow.setLayoutX(item.getX() + 5.0);
-        shadow.setLayoutY(item.getY() + 9.5);
+        Ellipse shadow = createEntityShadow(imageView);
 
         return new ShieldItemView(imageView, shadow);
+    }
+
+    public static SwordItemView createSwordItemView(SwordItem item) {
+        ImageView imageView = new ImageView(new Image(Objects.requireNonNull(
+                EntityViewFactory.class.getResourceAsStream(SWORD_SPRITE))));
+        imageView.setFitWidth(item.getWidth());
+        imageView.setFitHeight(item.getHeight());
+        imageView.setLayoutX(item.getX());
+        imageView.setLayoutY(item.getY());
+
+        Ellipse shadow = createEntityShadow(imageView);
+
+        return new SwordItemView(imageView, shadow);
     }
 
     public static BoneProjectileView createBoneProjectileView(BoneProjectile projectile, Image[] frames) {
